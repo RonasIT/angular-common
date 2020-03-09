@@ -22,6 +22,10 @@
       "common": [
         "dist/common/common",
         "dist/common"
+      ],
+      "api": [
+        "dist/api/api",
+        "dist/api"
       ]
     }
   },
