@@ -22,6 +22,10 @@
       "api": [
         "dist/api/api",
         "dist/api"
+      ],
+      "test-lib": [
+        "dist/test-lib/test-lib",
+        "dist/test-lib"
       ]
     }
   },
