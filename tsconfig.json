@@ -19,8 +19,9 @@
       "dom"
     ],
     "paths": {
-      "api": [
-        "dist/@ronas-it/angular-common/api/"
+      "angular-common": [
+        "dist/angular-common/angular-common",
+        "dist/angular-common"
       ]
     }
   },

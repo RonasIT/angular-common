@@ -3,21 +3,21 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "api": {
+    "angular-common": {
       "projectType": "library",
-      "root": "projects/ronas-it/angular-common/api",
-      "sourceRoot": "projects/ronas-it/angular-common/api/src",
+      "root": "projects/angular-common",
+      "sourceRoot": "projects/angular-common/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "projects/ronas-it/angular-common/api/tsconfig.lib.json",
-            "project": "projects/ronas-it/angular-common/api/ng-package.json"
+            "tsConfig": "projects/angular-common/tsconfig.lib.json",
+            "project": "projects/angular-common/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/ronas-it/angular-common/api/tsconfig.lib.prod.json"
+              "tsConfig": "projects/angular-common/tsconfig.lib.prod.json"
             }
           }
         },
@@ -25,8 +25,8 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/ronas-it/angular-common/api/tsconfig.lib.json",
-              "projects/ronas-it/angular-common/api/tsconfig.spec.json"
+              "projects/angular-common/tsconfig.lib.json",
+              "projects/angular-common/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
