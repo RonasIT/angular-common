@@ -1,8 +1,8 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ApiService } from './api.service';
-import { ContentTypeInterceptor } from './interceptors';
 import { ModuleConfig } from './config';
+import { ContentTypeInterceptor } from './interceptors';
 
 @NgModule({
   imports: [
@@ -26,5 +26,4 @@ export class ApiModule {
       ]
     };
   }
-
 }
