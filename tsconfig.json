@@ -26,6 +26,14 @@
       "api": [
         "dist/api/api",
         "dist/api"
+      ],
+      "auth": [
+        "dist/auth/auth",
+        "dist/auth"
+      ],
+      "user": [
+        "dist/user/user",
+        "dist/user"
       ]
     }
   },
