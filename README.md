@@ -5,7 +5,7 @@
 Install Ronas IT Angular Common:
 
 ```bash
-npm i @ronas-it/angular-common
+npm i @ronas-it/angular-common --save
 ```
 
 ## Usage
@@ -178,7 +178,12 @@ import { NgModule } from '@angular/core';
     CommonAuthModule.forRoot({
       whitelistedDomains: configuration.api.whitelisted_domains,
       unauthorizedRoutes: configuration.api.unauthorized_routes,
-      authService: AuthService
+      authService: AuthService,
+
+      // Optionally, you can pass `unauthenticatedRoute` parameter that
+      // specifies the route to redirect to after logout or when a user is
+      // not authenticated to view some page. By default it is set to `/login`.
+      unauthenticatedRoute: '/'
     }),
     ...
   ],

@@ -1,5 +1,6 @@
 import { AbstractUser, UserService } from '../user';
 import { ApiService } from '../api';
+import { AuthConfig } from './config';
 import { AuthCredentials, AuthResponse } from './models';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -31,6 +32,7 @@ export class AuthService<User extends AbstractUser> {
 
   constructor(
     protected apiService: ApiService,
+    protected authConfig: AuthConfig,
     protected router: Router,
     protected userService: UserService<User>
   ) {
@@ -60,7 +62,7 @@ export class AuthService<User extends AbstractUser> {
     this.resetToken();
     this.userService.resetProfile();
 
-    this.router.navigate(['/login']);
+    this.router.navigate([this.authConfig.unauthenticatedRoute ?? '/login']);
   }
 
   public refreshToken(): Observable<HttpResponse<void>> {

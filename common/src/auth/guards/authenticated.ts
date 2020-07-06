@@ -1,4 +1,5 @@
 import { AbstractUser } from '../../user';
+import { AuthConfig } from '../config';
 import { AuthService } from '../auth.service';
 import { CanActivate, Router } from '@angular/router';
 import { Injectable } from '@angular/core';
@@ -8,6 +9,7 @@ import { tap } from 'rxjs/operators';
 @Injectable()
 export class AuthenticatedGuard implements CanActivate {
   constructor(
+    private authConfig: AuthConfig,
     private authService: AuthService<AbstractUser>,
     private router: Router
   ) {}
@@ -17,7 +19,7 @@ export class AuthenticatedGuard implements CanActivate {
       .pipe(
         tap((isAuthenticated) => {
           if (!isAuthenticated) {
-            this.router.navigate(['/login']);
+            this.router.navigate([this.authConfig.unauthenticatedRoute ?? '/login']);
           }
         })
       );
