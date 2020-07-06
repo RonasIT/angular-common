@@ -6,6 +6,10 @@ import { ModuleConfig } from './config';
 
 @Injectable()
 export class ApiService {
+  public get apiUrl(): string {
+    return this.config.apiUrl;
+  }
+
   constructor(
     private httpClient: HttpClient,
     private config: ModuleConfig
@@ -14,7 +18,7 @@ export class ApiService {
   public get<T = any>(endpoint: string, params: any = {}, options: object = {}): Observable<T> {
     params = this.prepareHttpParams(params);
 
-    return this.httpClient.get<T>(`${this.config.apiUrl}${endpoint}`, {
+    return this.httpClient.get<T>(`${this.apiUrl}${endpoint}`, {
       params,
       ...options
     });
@@ -23,7 +27,7 @@ export class ApiService {
   public post<T = any>(endpoint: string, data: any = {}, options: object = {}): Observable<T> {
     const params = (this.hasFiles(data)) ? this.convertToFormData(data) : data;
 
-    return this.httpClient.post<T>(`${this.config.apiUrl}${endpoint}`, params, options);
+    return this.httpClient.post<T>(`${this.apiUrl}${endpoint}`, params, options);
   }
 
   public put<T = any>(endpoint: string, data: any = {}, options: object = {}): Observable<T> {
@@ -31,16 +35,16 @@ export class ApiService {
       const params = this.convertToFormData(data, false);
       params.append('_method', 'PUT');
 
-      return this.httpClient.post<T>(`${this.config.apiUrl}${endpoint}`, params, options);
+      return this.httpClient.post<T>(`${this.apiUrl}${endpoint}`, params, options);
     } else {
-      return this.httpClient.put<T>(`${this.config.apiUrl}${endpoint}`, data, options);
+      return this.httpClient.put<T>(`${this.apiUrl}${endpoint}`, data, options);
     }
   }
 
   public delete<T = any>(endpoint: string, params: any = {}, options: object = {}): Observable<T> {
     params = this.prepareHttpParams(params);
 
-    return this.httpClient.delete<T>(`${this.config.apiUrl}${endpoint}`, {
+    return this.httpClient.delete<T>(`${this.apiUrl}${endpoint}`, {
       params,
       ...options
     });

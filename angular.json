@@ -34,38 +34,6 @@
           }
         }
       }
-    },
-    "api": {
-      "projectType": "library",
-      "root": "common/api",
-      "sourceRoot": "common/api/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
-          "options": {
-            "tsConfig": "common/api/tsconfig.lib.json",
-            "project": "common/api/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "common/api/tsconfig.lib.prod.json"
-            }
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "common/api/tsconfig.lib.json",
-              "common/api/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        }
-      }
     }
   },
   "defaultProject": "common"
