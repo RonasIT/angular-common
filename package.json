@@ -1,5 +1,18 @@
 {
   "name": "@ronas-it/angular-common",
+  "description": "Ronas IT Angular Common - Modules",
+  "keywords": [
+    "angular",
+    "modules",
+    "component",
+    "auth",
+    "api",
+    "user"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RonasIT/angular-common.git"
+  },
   "version": "1.0.1",
   "scripts": {
     "build": "ng build"
