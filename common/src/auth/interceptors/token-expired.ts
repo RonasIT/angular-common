@@ -4,11 +4,17 @@ import { AuthService } from '../auth.service';
 import {
   catchError,
   filter,
+  mapTo,
   switchMap,
   take,
   withLatestFrom
 } from 'rxjs/operators';
-import { EMPTY, Observable, throwError } from 'rxjs';
+import {
+  EMPTY,
+  Observable,
+  of,
+  throwError
+} from 'rxjs';
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -78,10 +84,14 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
         withLatestFrom(this.authService.token$),
         take(1),
         switchMap(([isTokenRefreshing, token]) => {
-          if (!isTokenRefreshing) {
-            this.authService.refreshToken();
+          if (isTokenRefreshing) {
+            return of(token);
           }
 
+          return this.authService.refreshToken()
+            .pipe(mapTo(token));
+        }),
+        switchMap((token) => {
           return this.authService.token$
             .pipe(
               filter((newToken) => newToken !== token),
