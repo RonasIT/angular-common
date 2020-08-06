@@ -176,8 +176,8 @@ import { NgModule } from '@angular/core';
 @NgModule({
   imports: [
     CommonAuthModule.forRoot({
-      whitelistedDomains: configuration.api.whitelisted_domains,
-      unauthorizedRoutes: configuration.api.unauthorized_routes,
+      allowedDomains: configuration.api.allowed_domains,
+      disallowedRoutes: configuration.api.disallowed_routes,
       authService: AuthService,
 
       // Optionally, you can pass `unauthenticatedRoute` parameter that

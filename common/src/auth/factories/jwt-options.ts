@@ -10,7 +10,7 @@ export function jwtOptionsFactory(config: AuthConfig, authService: AuthService<A
         .pipe(take(1))
         .toPromise();
     },
-    whitelistedDomains: config.whitelistedDomains,
-    blacklistedRoutes: config.unauthorizedRoutes
+    allowedDomains: config.allowedDomains,
+    disallowedRoutes: config.disallowedRoutes
   };
 }

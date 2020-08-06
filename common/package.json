@@ -1,11 +1,11 @@
 {
   "name": "@ronas-it/angular-common",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "dependencies": {
-    "@auth0/angular-jwt": "^4.0.0",
-    "class-transformer": "^0.2.3",
+    "@auth0/angular-jwt": "^5.0.1",
+    "class-transformer": "^0.3.1",
     "lodash": "^4.17.15",
-    "tslib": "^1.11.1"
+    "tslib": "^2.0.0"
   },
   "peerDependencies": {
     "@angular/common": "^9.1.3",

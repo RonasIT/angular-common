@@ -1,6 +1,12 @@
+import { RefreshTokenMode } from './enums';
+
 export class AuthConfig {
-  public whitelistedDomains: Array<string>;
-  public unauthorizedRoutes: Array<string>;
+  public allowedDomains: Array<string>;
+  public disallowedRoutes: Array<string>;
   public authService: Function;
   public unauthenticatedRoute?: string;
+  public loginEndpoint?: string;
+  public refreshTokenEndpoint?: string;
+  public refreshTokenMode?: RefreshTokenMode;
+  public refreshTokenNewTokenField?: string;
 }

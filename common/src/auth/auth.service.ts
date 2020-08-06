@@ -1,7 +1,8 @@
-import { AbstractUser, UserService } from '../user';
-import { ApiService } from '../api';
 import { AuthConfig } from './config';
 import { AuthCredentials, AuthResponse } from './models';
+import { RefreshTokenMode } from './enums';
+import { AbstractUser, UserService } from '../user';
+import { ApiService } from '../api';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
@@ -45,11 +46,11 @@ export class AuthService<User extends AbstractUser> {
 
   public authorize(credentials: AuthCredentials): Observable<AuthResponse<User>> {
     return this.apiService
-      .post<AuthResponse<User>>('/login', credentials)
+      .post<AuthResponse<User>>(this.authConfig.loginEndpoint ?? '/login', credentials)
       .pipe(
         map((response) => new AuthResponse<User>({
           ...response,
-          user: this.userService.plainToUser(response.user, { groups: ['main'] })
+          user: this.userService.plainToUser(response?.user, { groups: ['main'] })
         })),
         tap((response) => {
           this.setToken(response.token);
@@ -69,12 +70,15 @@ export class AuthService<User extends AbstractUser> {
     this.isTokenRefreshingSubject.next(true);
 
     return this.apiService
-      .get<HttpResponse<void>>('/auth/refresh', {}, {
+      .get<HttpResponse<void>>(this.authConfig.refreshTokenEndpoint ?? '/auth/refresh', {}, {
         observe: 'response'
       })
       .pipe(
         tap((response) => {
-          const token = response.headers.get('Authorization').split(' ')[1];
+          const refreshTokenMode = this.authConfig.refreshTokenMode ?? RefreshTokenMode.HEADER;
+          const token = (refreshTokenMode === RefreshTokenMode.HEADER)
+            ? response.headers.get(this.authConfig.refreshTokenNewTokenField ?? 'Authorization').split(' ')[1]
+            : response.body[this.authConfig.refreshTokenNewTokenField ?? 'token'];
 
           this.setToken(token);
 

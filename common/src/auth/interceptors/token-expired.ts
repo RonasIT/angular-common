@@ -1,6 +1,7 @@
 import { AbstractUser } from '../../user';
 import { ApiService } from '../../api';
 import { AuthService } from '../auth.service';
+import { JwtExceptions } from '../enums';
 import {
   catchError,
   filter,
@@ -9,12 +10,7 @@ import {
   take,
   withLatestFrom
 } from 'rxjs/operators';
-import {
-  EMPTY,
-  Observable,
-  of,
-  throwError
-} from 'rxjs';
+import { EMPTY, Observable, of, throwError } from 'rxjs';
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -24,7 +20,6 @@ import {
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { isNull } from 'lodash';
-import { JwtExceptions } from '../enums';
 import { JwtHelperService, JwtInterceptor } from '@auth0/angular-jwt';
 
 @Injectable()
@@ -34,7 +29,7 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
     private authService: AuthService<AbstractUser>,
     private jwtHelperService: JwtHelperService,
     private jwtInterceptor: JwtInterceptor
-  ) {}
+  ) { }
 
   public intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (!this.shouldInterceptRequest(request)) {
@@ -66,8 +61,8 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
   }
 
   private shouldInterceptRequest(request: HttpRequest<any>): boolean {
-    return this.jwtInterceptor.isWhitelistedDomain(request) &&
-      !this.jwtInterceptor.isBlacklistedRoute(request);
+    return this.jwtInterceptor.isAllowedDomain(request) &&
+      !this.jwtInterceptor.isDisallowedRoute(request);
   }
 
   private isRefreshTokenRequest(request: HttpRequest<any>): boolean {

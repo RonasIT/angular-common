@@ -1,10 +1,14 @@
 import { AbstractUser, UserPasswords } from './models';
+import { UserConfig } from './config';
 import { ApiService } from '../api';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { classToPlain, ClassTransformOptions, plainToClass } from 'class-transformer';
+import {
+  classToPlain,
+  ClassTransformOptions,
+  plainToClass
+} from 'class-transformer';
 import { Injectable } from '@angular/core';
 import { map, tap } from 'rxjs/operators';
-import { UserConfig } from './config';
 
 @Injectable()
 export class UserService<User extends AbstractUser> {
@@ -73,6 +77,8 @@ export class UserService<User extends AbstractUser> {
   }
 
   public plainToUser(plain: Object, options?: ClassTransformOptions): User {
-    return plainToClass(this.config.userModel as any, plain, options);
+    return (plain)
+      ? plainToClass(this.config.userModel as any, plain, options)
+      : null;
   }
 }
