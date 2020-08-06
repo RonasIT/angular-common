@@ -8,5 +8,6 @@ export class AuthConfig {
   public loginEndpoint?: string;
   public refreshTokenEndpoint?: string;
   public refreshTokenMode?: RefreshTokenMode;
-  public refreshTokenNewTokenField?: string;
+  public tokenField?: string;
+  public refreshTokenField: string;
 }

@@ -4,15 +4,25 @@ import { RefreshTokenMode } from './enums';
 import { AbstractUser, UserService } from '../user';
 import { ApiService } from '../api';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthService<User extends AbstractUser> {
+  public static DEFAULT_LOGIN_ENDPOINT: string = '/login';
+  public static DEFAULT_UNAUTHENTICATED_ROUTE: string = '/';
+  public static DEFAULT_TOKEN_FIELD: string = 'token';
+  public static DEFAULT_REFRESH_TOKEN_FIELD: string = 'refresh_token';
+  public static DEFAULT_REFRESH_TOKEN_ENDPOINT: string = '/auth/refresh';
+
   public get token$(): Observable<string> {
     return this._token$;
+  }
+
+  public get refreshToken$(): Observable<string> {
+    return this._refreshToken$;
   }
 
   public get isTokenRefreshing$(): Observable<boolean> {
@@ -27,8 +37,10 @@ export class AuthService<User extends AbstractUser> {
 
   protected _token$: Observable<string>;
   protected _isTokenRefreshing$: Observable<boolean>;
+  protected _refreshToken$: Observable<string>;
 
   protected tokenSubject: BehaviorSubject<string>;
+  protected refreshTokenSubject: BehaviorSubject<string>;
   protected isTokenRefreshingSubject: BehaviorSubject<boolean>;
 
   constructor(
@@ -37,8 +49,11 @@ export class AuthService<User extends AbstractUser> {
     protected router: Router,
     protected userService: UserService<User>
   ) {
-    this.tokenSubject = new BehaviorSubject(localStorage.getItem('token'));
+    this.tokenSubject = new BehaviorSubject(localStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD));
     this._token$ = this.tokenSubject.asObservable();
+
+    this.refreshTokenSubject = new BehaviorSubject(localStorage.getItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD));
+    this._refreshToken$ = this.refreshTokenSubject.asObservable();
 
     this.isTokenRefreshingSubject = new BehaviorSubject(false);
     this._isTokenRefreshing$ = this.isTokenRefreshingSubject.asObservable();
@@ -46,59 +61,82 @@ export class AuthService<User extends AbstractUser> {
 
   public authorize(credentials: AuthCredentials): Observable<AuthResponse<User>> {
     return this.apiService
-      .post<AuthResponse<User>>(this.authConfig.loginEndpoint ?? '/login', credentials)
+      .post<AuthResponse<User>>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, credentials)
       .pipe(
         map((response) => new AuthResponse<User>({
-          ...response,
+          token: response[this.authConfig.tokenField],
+          refreshToken: response[this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD],
           user: this.userService.plainToUser(response?.user, { groups: ['main'] })
         })),
-        tap((response) => {
-          this.setToken(response.token);
-          this.userService.setProfile(response.user);
+        tap((authResponse) => {
+          this.setToken(authResponse.token, authResponse.refreshToken);
+          this.userService.setProfile(authResponse.user);
         })
       );
   }
 
   public unauthorize(): void {
-    this.resetToken();
+    this.resetTokens();
     this.userService.resetProfile();
 
-    this.router.navigate([this.authConfig.unauthenticatedRoute ?? '/login']);
+    this.router.navigate([this.authConfig.unauthenticatedRoute ?? AuthService.DEFAULT_UNAUTHENTICATED_ROUTE]);
   }
 
   public refreshToken(): Observable<HttpResponse<void>> {
     this.isTokenRefreshingSubject.next(true);
 
-    return this.apiService
-      .get<HttpResponse<void>>(this.authConfig.refreshTokenEndpoint ?? '/auth/refresh', {}, {
-        observe: 'response'
-      })
+    return this
+      .refreshToken$
       .pipe(
-        tap((response) => {
-          const refreshTokenMode = this.authConfig.refreshTokenMode ?? RefreshTokenMode.HEADER;
-          const token = (refreshTokenMode === RefreshTokenMode.HEADER)
-            ? response.headers.get(this.authConfig.refreshTokenNewTokenField ?? 'Authorization').split(' ')[1]
-            : response.body[this.authConfig.refreshTokenNewTokenField ?? 'token'];
+        switchMap((refreshToken) => {
+          const data = {};
+          if (refreshToken) {
+            data[this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD] = refreshToken;
+          }
 
-          this.setToken(token);
+          return this.apiService
+            .get<HttpResponse<void>>(
+              this.authConfig.refreshTokenEndpoint ?? AuthService.DEFAULT_REFRESH_TOKEN_ENDPOINT,
+              data,
+              {
+                observe: 'response'
+              }
+            )
+            .pipe(
+              tap((response) => {
+                const refreshTokenMode = this.authConfig.refreshTokenMode ?? RefreshTokenMode.HEADER;
+                const token = (refreshTokenMode === RefreshTokenMode.HEADER)
+                  ? response.headers.get('Authorization').split(' ')[1]
+                  : response.body[this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD];
 
-          this.isTokenRefreshingSubject.next(false);
-        }),
-        catchError((error) => {
-          this.isTokenRefreshingSubject.next(false);
+                this.setToken(token);
+                this.isTokenRefreshingSubject.next(false);
+              }),
+              catchError((error) => {
+                this.isTokenRefreshingSubject.next(false);
 
-          return throwError(error);
+                return throwError(error);
+              })
+            )
         })
       );
   }
 
-  public setToken(token: string): void {
-    localStorage.setItem('token', token);
+  public setToken(token: string, refreshToken?: string): void {
+    localStorage.setItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD, token);
     this.tokenSubject.next(token);
+
+    if (refreshToken) {
+      localStorage.setItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD, refreshToken);
+      this.refreshTokenSubject.next(refreshToken);
+    }
   }
 
-  public resetToken(): void {
-    localStorage.removeItem('token');
+  public resetTokens(): void {
+    localStorage.removeItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
     this.tokenSubject.next(null);
+
+    localStorage.removeItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
+    this.refreshTokenSubject.next(null);
   }
 }
