@@ -5,6 +5,7 @@ export class AuthConfig {
   public disallowedRoutes: Array<string>;
   public authService: Function;
   public unauthenticatedRoute?: string;
+  public authenticatedRoute?: string;
   public loginEndpoint?: string;
   public refreshTokenEndpoint?: string;
   public refreshTokenMode?: RefreshTokenMode;
