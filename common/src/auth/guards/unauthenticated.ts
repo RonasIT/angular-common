@@ -20,7 +20,7 @@ export class UnauthenticatedGuard implements CanActivate {
       .pipe(
         tap((isAuthenticated) => {
           if (isAuthenticated) {
-            this.router.navigate([this.authConfig.unauthenticatedRoute ?? '/account']);
+            this.router.navigate([this.authConfig.authenticatedRoute ?? '/account']);
           }
         }),
         map((isAuthenticated) => !isAuthenticated)
