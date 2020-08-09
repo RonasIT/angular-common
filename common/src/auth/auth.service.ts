@@ -64,7 +64,7 @@ export class AuthService<User extends AbstractUser> {
       .post<AuthResponse<User>>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, credentials)
       .pipe(
         map((response) => new AuthResponse<User>({
-          token: response[this.authConfig.tokenField],
+          token: response[this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD],
           refreshToken: response[this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD],
           user: this.userService.plainToUser(response?.user, { groups: ['main'] })
         })),
