@@ -1,4 +1,4 @@
 export class ModuleConfig {
   apiUrl: string;
-  trailingSlash: boolean;
+  trailingSlash?: boolean;
 }
