@@ -68,11 +68,13 @@ export class AuthService<User extends AbstractUser> {
           refreshToken: response[this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD],
           user: this.userService.plainToUser(response?.user, { groups: ['main'] })
         })),
-        tap((authResponse) => {
-          this.setToken(authResponse.token, authResponse.refreshToken);
-          this.userService.setProfile(authResponse.user);
-        })
+        tap((authResponse) => this.manuallyAuthorize(authResponse))
       );
+  }
+
+  public manuallyAuthorize(authResponse: AuthResponse<User>): void {
+    this.setToken(authResponse.token, authResponse.refreshToken);
+    this.userService.setProfile(authResponse.user);
   }
 
   public unauthorize(): void {
