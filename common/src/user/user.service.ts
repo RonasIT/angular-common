@@ -76,7 +76,7 @@ export class UserService<User extends AbstractUser> {
     return classToPlain(user, options);
   }
 
-  public plainToUser(plain: Object, options?: ClassTransformOptions): User {
+  public plainToUser(plain: object, options?: ClassTransformOptions): User {
     return (plain)
       ? plainToClass(this.config.userModel as any, plain, options)
       : null;

@@ -3,7 +3,7 @@ import { AuthCredentials, AuthResponse } from './models';
 import { RefreshTokenMode } from './enums';
 import { AbstractUser, UserService } from '../user';
 import { ApiService } from '../api';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
@@ -61,20 +61,25 @@ export class AuthService<User extends AbstractUser> {
 
   public authorize(credentials: AuthCredentials): Observable<AuthResponse<User>> {
     return this.apiService
-      .post<AuthResponse<User>>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, credentials)
+      .post<object>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, credentials)
+      .pipe(
+        switchMap((response) => this.manuallyAuthorize(response))
+      );
+  }
+
+  public manuallyAuthorize(authResponse: object): Observable<AuthResponse<User>> {
+    return of(authResponse)
       .pipe(
         map((response) => new AuthResponse<User>({
           token: response[this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD],
           refreshToken: response[this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD],
-          user: this.userService.plainToUser(response?.user, { groups: ['main'] })
+          user: this.userService.plainToUser(response['user'], { groups: ['main'] })
         })),
-        tap((authResponse) => this.manuallyAuthorize(authResponse))
+        tap((authResponse) => {
+          this.setToken(authResponse.token, authResponse.refreshToken);
+          this.userService.setProfile(authResponse.user);
+        })
       );
-  }
-
-  public manuallyAuthorize(authResponse: AuthResponse<User>): void {
-    this.setToken(authResponse.token, authResponse.refreshToken);
-    this.userService.setProfile(authResponse.user);
   }
 
   public unauthorize(): void {
