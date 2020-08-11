@@ -10,7 +10,7 @@ export class ApiService {
     return this.config.apiUrl;
   }
 
-  private get trailingSlash(): string {
+  public get trailingSlash(): string {
     return (this.config.trailingSlash) ? '/' : '';
   }
 

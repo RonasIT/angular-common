@@ -8,6 +8,7 @@ export class AuthConfig {
   public authenticatedRoute?: string;
   public loginEndpoint?: string;
   public refreshTokenEndpoint?: string;
+  public refreshTokenEndpointMethod?: 'get' | 'post';
   public refreshTokenMode?: RefreshTokenMode;
   public tokenField?: string;
   public refreshTokenField?: string;

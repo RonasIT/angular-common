@@ -101,8 +101,10 @@ export class AuthService<User extends AbstractUser> {
             data[this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD] = refreshToken;
           }
 
-          return this.apiService
-            .get<HttpResponse<void>>(
+          const method = this.authConfig.refreshTokenEndpointMethod ?? 'get';
+
+          return this.apiService[method]
+            <HttpResponse<void>>(
               this.authConfig.refreshTokenEndpoint ?? AuthService.DEFAULT_REFRESH_TOKEN_ENDPOINT,
               data,
               {

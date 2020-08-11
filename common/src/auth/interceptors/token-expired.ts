@@ -21,11 +21,13 @@ import {
 import { Injectable } from '@angular/core';
 import { isNull } from 'lodash';
 import { JwtHelperService, JwtInterceptor } from '@auth0/angular-jwt';
+import { AuthConfig } from '../config';
 
 @Injectable()
 export class TokenExpiredInterceptor implements HttpInterceptor {
   constructor(
     private apiService: ApiService,
+    private authConfig: AuthConfig,
     private authService: AuthService<AbstractUser>,
     private jwtHelperService: JwtHelperService,
     private jwtInterceptor: JwtInterceptor
@@ -66,7 +68,7 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
   }
 
   private isRefreshTokenRequest(request: HttpRequest<any>): boolean {
-    return request.url === `${this.apiService.apiUrl}/auth/refresh`;
+    return request.url === `${this.apiService.apiUrl}${this.authConfig.refreshTokenEndpoint ?? '/auth/refresh'}${this.apiService.trailingSlash}`;
   }
 
   private shouldRefreshToken(token: string): boolean {

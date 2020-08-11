@@ -33,7 +33,7 @@ import { TokenExpiredInterceptor } from './interceptors';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenExpiredInterceptor,
-      deps: [ApiService, AuthService, JwtHelperService, JwtInterceptor],
+      deps: [ApiService, AuthConfig, AuthService, JwtHelperService, JwtInterceptor],
       multi: true
     }
   ]
