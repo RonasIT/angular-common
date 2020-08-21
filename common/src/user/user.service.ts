@@ -7,7 +7,7 @@ import {
   ClassTransformOptions,
   plainToClass
 } from 'class-transformer';
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { map, tap } from 'rxjs/operators';
 
 @Injectable()
@@ -20,10 +20,15 @@ export class UserService<User extends AbstractUser> {
 
   protected profileSubject: BehaviorSubject<User>;
 
+  protected apiService: ApiService;
+  protected config: UserConfig;
+
   constructor(
-    protected apiService: ApiService,
-    protected config: UserConfig
+    protected injector: Injector
   ) {
+    this.apiService = this.injector.get(ApiService);
+    this.config = this.injector.get(UserConfig);
+
     this.profileSubject = new BehaviorSubject(null);
     this._profile$ = this.profileSubject.asObservable();
   }

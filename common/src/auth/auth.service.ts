@@ -6,7 +6,7 @@ import { ApiService } from '../api';
 import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Injectable()
@@ -43,12 +43,19 @@ export class AuthService<User extends AbstractUser> {
   protected refreshTokenSubject: BehaviorSubject<string>;
   protected isTokenRefreshingSubject: BehaviorSubject<boolean>;
 
+  protected apiService: ApiService;
+  protected authConfig: AuthConfig;
+  protected router: Router;
+  protected userService: UserService<User>;
+
   constructor(
-    protected apiService: ApiService,
-    protected authConfig: AuthConfig,
-    protected router: Router,
-    protected userService: UserService<User>
+    protected injector: Injector
   ) {
+    this.apiService = this.injector.get(ApiService);
+    this.authConfig = this.injector.get(AuthConfig);
+    this.router = this.injector.get(Router);
+    this.userService = this.injector.get(UserService);
+
     this.tokenSubject = new BehaviorSubject(localStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD));
     this._token$ = this.tokenSubject.asObservable();
 
