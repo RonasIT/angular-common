@@ -93,6 +93,7 @@ export class AuthService<User extends AbstractUser> {
 
   public unauthorize(): void {
     this.resetTokens();
+    this.resetRemember();
     this.userService.resetProfile();
 
     this.router.navigate([this.authConfig.unauthenticatedRoute ?? AuthService.DEFAULT_UNAUTHENTICATED_ROUTE]);
@@ -164,6 +165,11 @@ export class AuthService<User extends AbstractUser> {
     localStorage.removeItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
     sessionStorage.removeItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
     this.refreshTokenSubject.next(null);
+  }
+
+  public resetRemember(): void {
+    localStorage.removeItem('remember');
+    sessionStorage.removeItem('remember');
   }
 
   private getTokensFromStorage(): [string, string] {
