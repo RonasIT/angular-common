@@ -56,25 +56,27 @@ export class AuthService<User extends AbstractUser> {
     this.router = this.injector.get(Router);
     this.userService = this.injector.get(UserService);
 
-    this.tokenSubject = new BehaviorSubject(localStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD));
+    const [token, refreshToken] = this.getTokensFromStorage();
+
+    this.tokenSubject = new BehaviorSubject(token);
     this._token$ = this.tokenSubject.asObservable();
 
-    this.refreshTokenSubject = new BehaviorSubject(localStorage.getItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD));
+    this.refreshTokenSubject = new BehaviorSubject(refreshToken);
     this._refreshToken$ = this.refreshTokenSubject.asObservable();
 
     this.isTokenRefreshingSubject = new BehaviorSubject(false);
     this._isTokenRefreshing$ = this.isTokenRefreshingSubject.asObservable();
   }
 
-  public authorize(credentials: AuthCredentials): Observable<AuthResponse<User>> {
+  public authorize(credentials: AuthCredentials, remember: boolean = true): Observable<AuthResponse<User>> {
     return this.apiService
       .post<object>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, credentials)
       .pipe(
-        switchMap((response) => this.manuallyAuthorize(response))
+        switchMap((response) => this.manuallyAuthorize(response, remember))
       );
   }
 
-  public manuallyAuthorize(authResponse: object): Observable<AuthResponse<User>> {
+  public manuallyAuthorize(authResponse: object, remember: boolean = true): Observable<AuthResponse<User>> {
     return of(authResponse)
       .pipe(
         map((response) => new AuthResponse<User>({
@@ -83,7 +85,7 @@ export class AuthService<User extends AbstractUser> {
           user: this.userService.plainToUser(response['user'], { groups: ['main'] })
         })),
         tap((authResponse) => {
-          this.setToken(authResponse.token, authResponse.refreshToken);
+          this.setToken(authResponse.token, authResponse.refreshToken, remember);
           this.userService.setProfile(authResponse.user);
         })
       );
@@ -125,7 +127,9 @@ export class AuthService<User extends AbstractUser> {
                   ? response.headers.get('Authorization').split(' ')[1]
                   : response.body[this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD];
 
-                this.setToken(token);
+                const remember = this.getRemember();
+
+                this.setToken(token, undefined, remember);
                 this.isTokenRefreshingSubject.next(false);
               }),
               catchError((error) => {
@@ -138,21 +142,50 @@ export class AuthService<User extends AbstractUser> {
       );
   }
 
-  public setToken(token: string, refreshToken?: string): void {
-    localStorage.setItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD, token);
+  public setToken(token: string, refreshToken?: string, remember: boolean = true): void {
+    const storage = (remember) ? localStorage : sessionStorage;
+
+    storage.setItem('remember', String(remember));
+
+    storage.setItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD, token);
     this.tokenSubject.next(token);
 
     if (refreshToken) {
-      localStorage.setItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD, refreshToken);
+      storage.setItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD, refreshToken);
       this.refreshTokenSubject.next(refreshToken);
     }
   }
 
   public resetTokens(): void {
     localStorage.removeItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
+    sessionStorage.removeItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
     this.tokenSubject.next(null);
 
     localStorage.removeItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
+    sessionStorage.removeItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
     this.refreshTokenSubject.next(null);
+  }
+
+  private getTokensFromStorage(): [string, string] {
+    let token = localStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
+    if (!token) {
+      token = sessionStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
+    }
+
+    let refreshToken = localStorage.getItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
+    if (!refreshToken) {
+      refreshToken = sessionStorage.getItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
+    }
+
+    return [token, refreshToken];
+  }
+
+  private getRemember(): boolean {
+    let remember = localStorage.getItem('remember');
+    if (!remember) {
+      remember = sessionStorage.getItem('remember');
+    }
+
+    return remember === 'true';
   }
 }
