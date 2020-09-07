@@ -4,7 +4,7 @@ import { RefreshTokenMode } from './enums';
 import { AbstractUser, UserService } from '../user';
 import { ApiService } from '../api';
 import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
@@ -105,6 +105,7 @@ export class AuthService<User extends AbstractUser> {
     return this
       .refreshToken$
       .pipe(
+        take(1),
         switchMap((refreshToken) => {
           const data = {};
           if (refreshToken) {
