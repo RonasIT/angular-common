@@ -66,10 +66,10 @@ export class UserService<User extends AbstractUser> {
 
   public patchProfile(user: Partial<User>): void {
     if (this.profileSubject.value) {
-      this.profileSubject.next(this.plainToUser({
-        ...this.userToPlain(this.profileSubject.value, { groups: ['main'] }),
+      this.profileSubject.next(new this.config.userModel({
+        ...this.profileSubject.value,
         ...user
-      }, { groups: ['main'] }));
+      }));
     }
   }
 

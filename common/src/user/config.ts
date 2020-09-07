@@ -1,4 +1,4 @@
 export class UserConfig {
-  public userModel: Function;
+  public userModel: { new(user: any): any };
   public userService: Function;
 }
