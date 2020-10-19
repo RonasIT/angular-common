@@ -41,8 +41,12 @@ export class UserService<User extends AbstractUser> {
   }
 
   public loadProfile(): Observable<User> {
+    const params = (this.config.profileRelations && this.config.profileRelations.length > 0)
+      ? { [this.config.profileRelationsKey ?? 'with']: this.config.profileRelations }
+      : {};
+
     return this.apiService
-      .get('/profile')
+      .get('/profile', params)
       .pipe(
         map((profile) => this.plainToUser(profile, { groups: ['main'] }))
       );
