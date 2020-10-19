@@ -18,15 +18,15 @@
     "build": "ng build --prod"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^0.1000.7",
-    "@angular-devkit/build-ng-packagr": "^0.1000.7",
-    "@angular/common": "^10.0.11",
-    "@angular/compiler": "^10.0.11",
-    "@angular/compiler-cli": "^10.0.11",
-    "@angular/core": "^10.0.11",
-    "@angular/router": "^10.0.11",
-    "@types/lodash": "^4.14.159",
-    "ng-packagr": "^10.0.4",
+    "@angular-devkit/build-angular": "^0.1001.7",
+    "@angular-devkit/build-ng-packagr": "^0.1001.7",
+    "@angular/common": "^10.1.6",
+    "@angular/compiler": "^10.1.6",
+    "@angular/compiler-cli": "^10.1.6",
+    "@angular/core": "^10.1.6",
+    "@angular/router": "^10.1.6",
+    "@types/lodash": "^4.14.162",
+    "ng-packagr": "^10.1.2",
     "typescript": "^3.9.7"
   }
 }
