@@ -2,7 +2,7 @@ import { NgModule, ModuleWithProviders } from '@angular/core';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ApiService } from './api.service';
 import { ModuleConfig } from './config';
-import { ContentTypeInterceptor } from './interceptors';
+import { ContentTypeInterceptor, EncodeUrlParamsSafelyInterceptor } from './interceptors';
 
 @NgModule({
   imports: [
@@ -14,6 +14,11 @@ import { ContentTypeInterceptor } from './interceptors';
       provide: HTTP_INTERCEPTORS,
       useClass: ContentTypeInterceptor,
       multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: EncodeUrlParamsSafelyInterceptor,
+      multi: true,
     }
   ]
 })
