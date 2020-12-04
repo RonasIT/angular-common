@@ -8,6 +8,7 @@ import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
+import { classToPlain } from 'class-transformer';
 
 @Injectable()
 export class AuthService<User extends AbstractUser> {
@@ -68,9 +69,9 @@ export class AuthService<User extends AbstractUser> {
     this._isTokenRefreshing$ = this.isTokenRefreshingSubject.asObservable();
   }
 
-  public authorize(credentials: AuthCredentials, remember: boolean = true): Observable<AuthResponse<User>> {
+  public authorize<T>(credentials: AuthCredentials & T, remember: boolean = true): Observable<AuthResponse<User>> {
     return this.apiService
-      .post<object>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, credentials)
+      .post<object>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, classToPlain(credentials))
       .pipe(
         switchMap((response) => this.manuallyAuthorize(response, remember))
       );
