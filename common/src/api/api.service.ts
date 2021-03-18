@@ -14,6 +14,10 @@ export class ApiService {
     return (this.config.trailingSlash) ? '/' : '';
   }
 
+  public get fileKeys(): Array<string> {
+    return this.config.fileKeys ?? ['file', 'files'];
+  }
+
   constructor(
     private httpClient: HttpClient,
     private config: ModuleConfig
@@ -106,6 +110,6 @@ export class ApiService {
 
   private hasFiles(data: any): boolean {
     return typeof data === 'object'
-      && keys(data).some((key) => ['file', 'files'].includes(key));
+      && keys(data).some((key) => this.fileKeys.includes(key));
   }
 }
