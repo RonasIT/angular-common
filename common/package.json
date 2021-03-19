@@ -1,6 +1,6 @@
 {
   "name": "@ronas-it/angular-common",
-  "version": "1.0.30",
+  "version": "1.0.32",
   "dependencies": {
     "@auth0/angular-jwt": "^5.0.2",
     "class-transformer": "^0.4.0",
