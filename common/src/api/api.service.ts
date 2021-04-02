@@ -82,18 +82,7 @@ export class ApiService {
     const formData = new FormData();
     forOwn(data, (objectValue: any, objectKey) => {
       const appendKey = (isNested) ? `[${objectKey}]` : objectKey;
-      if (Array.isArray(objectValue)) {
-        objectValue.forEach((arrayValue, index) => {
-          if (typeof arrayValue === 'object') {
-            const formattedObject = this.convertToFormData(objectValue, true);
-            formattedObject.forEach((formDataValue, formDataKey) => {
-              formData.append(`${appendKey}${formDataKey}`, formDataValue);
-            });
-          } else {
-            formData.append(`${appendKey}[${index}]`, arrayValue);
-          }
-        });
-      } else if (objectValue instanceof File) {
+      if (objectValue instanceof File) {
         formData.append(appendKey, objectValue, objectValue.name);
       } else if (typeof objectValue === 'object') {
         const formattedObject = this.convertToFormData(objectValue, true);
