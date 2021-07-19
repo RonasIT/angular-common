@@ -8,6 +8,7 @@ import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { classToPlain } from 'class-transformer';
+import { CookieService } from 'ngx-cookie';
 
 @Injectable()
 export class AuthService<User extends AbstractUser> {
@@ -36,6 +37,7 @@ export class AuthService<User extends AbstractUser> {
   protected authConfig: AuthConfig;
   protected router: Router;
   protected userService: UserService<User>;
+  protected cookieService: CookieService;
 
   constructor(
     protected injector: Injector
@@ -44,6 +46,7 @@ export class AuthService<User extends AbstractUser> {
     this.authConfig = this.injector.get(AuthConfig);
     this.router = this.injector.get(Router);
     this.userService = this.injector.get(UserService);
+    this.cookieService = this.injector.get(CookieService);
 
     const isAuthenticated = this.getIsAuthenticatedFromStorage();
 
@@ -112,38 +115,28 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public setIsAuthenticated(remember: boolean = true): void {
-    const storage = (remember) ? localStorage : sessionStorage;
-
-    storage.setItem('remember', String(remember));
-    storage.setItem(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true');
+    this.cookieService.put('remember', String(remember));
+    this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true');
 
     this.isAuthenticatedSubject.next(true);
   }
 
   public resetIsAuthenticated(): void {
-    localStorage.removeItem(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
-    sessionStorage.removeItem(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
+    this.cookieService.remove(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD)
   }
 
   public resetRemember(): void {
-    localStorage.removeItem('remember');
-    sessionStorage.removeItem('remember');
+    this.cookieService.remove('remember');
   }
 
   private getIsAuthenticatedFromStorage(): boolean {
-    let isAuthenticated = localStorage.getItem(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
-    if (!isAuthenticated) {
-      isAuthenticated = sessionStorage.getItem(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
-    }
+    let isAuthenticated = this.cookieService.get(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
 
     return isAuthenticated === 'true';
   }
 
   private getRemember(): boolean {
-    let remember = localStorage.getItem('remember');
-    if (!remember) {
-      remember = sessionStorage.getItem('remember');
-    }
+    let remember = this.cookieService.get('remember');
 
     return remember === 'true';
   }

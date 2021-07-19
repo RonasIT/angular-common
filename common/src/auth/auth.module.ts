@@ -6,11 +6,13 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TokenExpiredInterceptor } from './interceptors';
+import { CookieModule } from 'ngx-cookie';
 
 @NgModule({
   imports: [
     HttpClientModule,
-    RouterModule
+    RouterModule,
+    CookieModule.forRoot()
   ],
   providers: [
     AuthenticatedGuard,
