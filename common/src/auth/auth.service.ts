@@ -3,7 +3,7 @@ import { AuthCredentials, AuthResponse } from './models';
 import { AbstractUser, UserService } from '../user';
 import { ApiService } from '../api';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, map, share, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
@@ -38,6 +38,8 @@ export class AuthService<User extends AbstractUser> {
   protected router: Router;
   protected userService: UserService<User>;
   protected cookieService: CookieService;
+
+  private processingTokenRefresh$: Observable<HttpResponse<void>>;
 
   constructor(
     protected injector: Injector
@@ -87,11 +89,15 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public refreshToken(): Observable<HttpResponse<void>> {
+    if (this.processingTokenRefresh$) {
+      return this.processingTokenRefresh$;
+    }
+
     this.isTokenRefreshingSubject.next(true);
 
     const method = this.authConfig.refreshTokenEndpointMethod ?? 'get';
 
-    return this.apiService[method]
+    this.processingTokenRefresh$ = this.apiService[method]
       (
         this.authConfig.refreshTokenEndpoint ?? AuthService.DEFAULT_REFRESH_TOKEN_ENDPOINT,
         {},
@@ -100,18 +106,24 @@ export class AuthService<User extends AbstractUser> {
         }
       )
       .pipe(
+        share(),
         tap(() => {
           const remember = this.getRemember();
 
           this.setIsAuthenticated(remember);
+
+          delete this.processingTokenRefresh$;
           this.isTokenRefreshingSubject.next(false);
         }),
         catchError((error) => {
+          delete this.processingTokenRefresh$;
           this.isTokenRefreshingSubject.next(false);
 
           return throwError(error);
         })
       );
+
+    return this.processingTokenRefresh$;
   }
 
   public setIsAuthenticated(remember: boolean = true): void {

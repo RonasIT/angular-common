@@ -35,12 +35,11 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
           if (
             response.status === HttpStatusCode.Unauthorized &&
             response.error.error === JwtExceptions.TOKEN_EXPIRED &&
-            this.authConfig.unauthorizedRoutes.includes(response.url)
+            !this.authConfig.unauthorizedRoutes.includes(response.url)
           ) {
             return this.authService
               .refreshToken()
               .pipe(
-                share(),
                 switchMap(() => next.handle(request))
               );
           }
