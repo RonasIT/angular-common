@@ -52,8 +52,8 @@ export class ProductService {
 
 ### UserModule
 
-_Note: This module depends on `ApiModule`. Please make sure to install it prior
-to installing this module._
+_Note: This module depends on `ApiModule` and `AuthModule`. Please make sure to
+install them prior to installing this module._
 
 1. Create a `User` model and extend it from `AbstractUser`:
 
