@@ -1,6 +1,7 @@
 import { AbstractUser, UserPasswords } from './models';
 import { UserConfig } from './config';
 import { ApiService } from '../api';
+import { AuthService } from '../auth';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
   classToPlain,
@@ -8,7 +9,7 @@ import {
   plainToClass
 } from 'class-transformer';
 import { Injectable, Injector } from '@angular/core';
-import { map, tap } from 'rxjs/operators';
+import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 
 @Injectable()
 export class UserService<User extends AbstractUser> {
@@ -21,12 +22,14 @@ export class UserService<User extends AbstractUser> {
   protected profileSubject: BehaviorSubject<User>;
 
   protected apiService: ApiService;
+  protected authService: AuthService<User>;
   protected config: UserConfig;
 
   constructor(
     protected injector: Injector
   ) {
     this.apiService = this.injector.get(ApiService);
+    this.authService = this.injector.get(AuthService);
     this.config = this.injector.get(UserConfig);
 
     this.profileSubject = new BehaviorSubject(null);
@@ -34,9 +37,15 @@ export class UserService<User extends AbstractUser> {
   }
 
   public refreshProfile(): Observable<User> {
-    return this.loadProfile()
+    return this.authService.isAuthenticated$
       .pipe(
-        tap((profile) => this.setProfile(profile))
+        take(1),
+        filter((isAuthenticated) => isAuthenticated),
+        switchMap(() => this.loadProfile()
+          .pipe(
+            tap((profile) => this.setProfile(profile))
+          )
+        )
       );
   }
 
