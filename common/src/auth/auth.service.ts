@@ -174,7 +174,7 @@ export class AuthService<User extends AbstractUser> {
     sessionStorage.removeItem('remember');
   }
 
-  private getTokensFromStorage(): [string, string] {
+  public getTokensFromStorage(): [string, string] {
     let token = localStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
     if (!token) {
       token = sessionStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
@@ -188,7 +188,7 @@ export class AuthService<User extends AbstractUser> {
     return [token, refreshToken];
   }
 
-  private getRemember(): boolean {
+  public getRemember(): boolean {
     let remember = localStorage.getItem('remember');
     if (!remember) {
       remember = sessionStorage.getItem('remember');
