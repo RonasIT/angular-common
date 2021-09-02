@@ -1,7 +1,7 @@
 import { AbstractUser, UserPasswords } from './models';
 import { UserConfig } from './config';
 import { ApiService } from '../api';
-import { AuthService } from '../auth';
+import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
   classToPlain,
