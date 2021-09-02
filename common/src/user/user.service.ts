@@ -22,14 +22,12 @@ export class UserService<User extends AbstractUser> {
   protected profileSubject: BehaviorSubject<User>;
 
   protected apiService: ApiService;
-  protected authService: AuthService<User>;
   protected config: UserConfig;
 
   constructor(
     protected injector: Injector
   ) {
     this.apiService = this.injector.get(ApiService);
-    this.authService = this.injector.get(AuthService);
     this.config = this.injector.get(UserConfig);
 
     this.profileSubject = new BehaviorSubject(null);
@@ -37,7 +35,9 @@ export class UserService<User extends AbstractUser> {
   }
 
   public refreshProfile(): Observable<User> {
-    return this.authService.isAuthenticated$
+    const authService = this.injector.get(AuthService);
+
+    return authService.isAuthenticated$
       .pipe(
         take(1),
         filter((isAuthenticated) => isAuthenticated),
