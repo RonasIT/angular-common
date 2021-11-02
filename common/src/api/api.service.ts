@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forOwn, isObject, keys } from 'lodash';
+import { forOwn, isArray, isObject, keys } from 'lodash';
 import { Observable } from 'rxjs';
 import { ModuleConfig } from './config';
 
@@ -66,10 +66,17 @@ export class ApiService {
         const nestedHttpParams = this.prepareHttpParams(value);
         nestedHttpParams.keys().forEach((nestedKey) => {
           const startKeyIndex = nestedKey.indexOf('[');
-          const parameterKey = (startKeyIndex === -1)
-            ? `${key}[${nestedKey}]`
-            : `${key}[${nestedKey.substring(0, startKeyIndex)}]${nestedKey.substring(startKeyIndex)}`;
-          httpParams = httpParams.append(parameterKey, nestedHttpParams.get(nestedKey));
+          let paramKey: string;
+          if (this.config.enableArrayKeys || !isArray(value)) {
+            paramKey = (startKeyIndex === -1)
+              ? `[${nestedKey}]`
+              : `[${nestedKey.substring(0, startKeyIndex)}]${nestedKey.substring(startKeyIndex)}`;
+          } else {
+            paramKey = (startKeyIndex === -1)
+              ? '[]'
+              : `[]${nestedKey.substring(startKeyIndex)}`;
+          }
+          httpParams = httpParams.append(`${key}${paramKey}`, nestedHttpParams.get(nestedKey));
         });
       } else if (typeof value === 'boolean') {
         httpParams = httpParams.append(key, value ? '1' : '0');
