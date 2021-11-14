@@ -50,7 +50,7 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
         }),
         catchError((response: HttpErrorResponse) => {
           if (response.status === 401) {
-            if (response.error.error === JwtExceptions.TOKEN_EXPIRED) {
+            if (response.error?.error === JwtExceptions.TOKEN_EXPIRED) {
               return this.refreshTokenAndHandleRequest(request, next);
             }
 
