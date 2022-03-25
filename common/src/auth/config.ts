@@ -2,7 +2,7 @@ import { RefreshTokenMode } from './enums';
 
 export class AuthConfig {
   public allowedDomains: Array<string>;
-  public disallowedRoutes: Array<string>;
+  public disallowedRoutes: Array<string | RegExp>;
   public authService: Function;
   public unauthenticatedRoute?: string;
   public authenticatedRoute?: string;
