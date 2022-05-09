@@ -5,7 +5,7 @@
     "@auth0/angular-jwt": "^5.0.2",
     "class-transformer": "^0.5.1",
     "lodash": "^4.17.21",
-    "tslib": "^2.3.1"
+    "tslib": "^2.4.0"
   },
   "peerDependencies": {
     "@angular/common": "^13.3.0",
