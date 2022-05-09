@@ -1,16 +1,15 @@
 {
   "name": "@ronas-it/angular-common",
-  "version": "1.0.34",
+  "version": "13.3.5",
   "dependencies": {
-    "class-transformer": "^0.4.0",
+    "class-transformer": "^0.5.1",
     "lodash": "^4.17.21",
-    "tslib": "^2.3.0"
+    "tslib": "^2.4.0"
   },
   "peerDependencies": {
-    "@angular/common": "^12.0.1",
-    "@angular/core": "^12.0.1",
-    "@angular/router": "^12.0.1",
-    "rxjs": "^6.6.3",
-    "ngx-cookie": "^5.0.2"
+    "@angular/common": "^13.3.0",
+    "@angular/core": "^13.3.0",
+    "@angular/router": "^13.3.0",
+    "rxjs": "^7.5.5"
   }
 }
