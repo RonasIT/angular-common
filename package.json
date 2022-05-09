@@ -15,7 +15,7 @@
   },
   "version": "13.3.5",
   "scripts": {
-    "build": "ng build --prod"
+    "build": "ng build --configuration production"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^13.3.5",
