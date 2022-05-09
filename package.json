@@ -13,7 +13,7 @@
     "type": "git",
     "url": "https://github.com/RonasIT/angular-common.git"
   },
-  "version": "13.3.1",
+  "version": "13.3.5",
   "scripts": {
     "build": "ng build --prod"
   },
