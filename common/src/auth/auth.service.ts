@@ -140,13 +140,13 @@ export class AuthService<User extends AbstractUser> {
   }
 
   private getIsAuthenticatedFromStorage(): boolean {
-    let isAuthenticated = this.cookieService.get(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
+    const isAuthenticated = this.cookieService.get(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
 
     return isAuthenticated === 'true';
   }
 
   private getRemember(): boolean {
-    let remember = this.cookieService.get('remember');
+    const remember = this.cookieService.get('remember');
 
     return remember === 'true';
   }
