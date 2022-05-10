@@ -110,11 +110,11 @@ export class AuthService<User extends AbstractUser> {
 
           this.setIsAuthenticated(remember);
 
-          delete this.refreshTokenResponse$;
+          this.refreshTokenResponse$ = null;
           this.isTokenRefreshingSubject.next(false);
         }),
         catchError((error) => {
-          delete this.refreshTokenResponse$;
+          this.refreshTokenResponse$ = null;
           this.isTokenRefreshingSubject.next(false);
 
           return throwError(error);
