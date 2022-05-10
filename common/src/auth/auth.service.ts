@@ -22,9 +22,7 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public get isAuthenticated$(): Observable<boolean> {
-    return this._isAuthenticated$.pipe(
-      map((isAuthenticated) => !!isAuthenticated)
-    );
+    return this._isAuthenticated$;
   }
 
   protected _isAuthenticated$: Observable<boolean>;
@@ -39,7 +37,7 @@ export class AuthService<User extends AbstractUser> {
   protected userService: UserService<User>;
   protected cookieService: CookieService;
 
-  private processingTokenRefresh$: Observable<HttpResponse<void>>;
+  private refreshTokenResponse$: Observable<HttpResponse<void>> | null;
 
   constructor(
     protected injector: Injector
@@ -89,15 +87,15 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public refreshToken(): Observable<HttpResponse<void>> {
-    if (this.processingTokenRefresh$) {
-      return this.processingTokenRefresh$;
+    if (this.refreshTokenResponse$) {
+      return this.refreshTokenResponse$;
     }
 
     this.isTokenRefreshingSubject.next(true);
 
     const method = this.authConfig.refreshTokenEndpointMethod ?? 'get';
 
-    this.processingTokenRefresh$ = this.apiService[method]
+    this.refreshTokenResponse$ = this.apiService[method]
       (
         this.authConfig.refreshTokenEndpoint ?? AuthService.DEFAULT_REFRESH_TOKEN_ENDPOINT,
         {},
@@ -112,18 +110,18 @@ export class AuthService<User extends AbstractUser> {
 
           this.setIsAuthenticated(remember);
 
-          delete this.processingTokenRefresh$;
+          delete this.refreshTokenResponse$;
           this.isTokenRefreshingSubject.next(false);
         }),
         catchError((error) => {
-          delete this.processingTokenRefresh$;
+          delete this.refreshTokenResponse$;
           this.isTokenRefreshingSubject.next(false);
 
           return throwError(error);
         })
       );
 
-    return this.processingTokenRefresh$;
+    return this.refreshTokenResponse$;
   }
 
   public setIsAuthenticated(remember: boolean = true): void {
