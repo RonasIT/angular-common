@@ -132,7 +132,7 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public resetIsAuthenticated(): void {
-    this.cookieService.remove(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD)
+    this.cookieService.remove(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
   }
 
   public resetRemember(): void {
