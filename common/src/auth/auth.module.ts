@@ -20,7 +20,7 @@ import { CookieModule } from 'ngx-cookie';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenExpiredInterceptor,
-      deps: [ApiService, AuthConfig, AuthService],
+      deps: [AuthConfig, AuthService],
       multi: true
     }
   ]

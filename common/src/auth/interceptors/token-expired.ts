@@ -1,12 +1,7 @@
 import { AbstractUser } from '../../user';
-import { ApiService } from '../../api';
 import { AuthService } from '../auth.service';
 import { JwtExceptions } from '../enums';
-import {
-  catchError,
-  share,
-  switchMap
-} from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 import {
   HttpErrorResponse,
@@ -22,7 +17,6 @@ import { AuthConfig } from '../config';
 @Injectable()
 export class TokenExpiredInterceptor implements HttpInterceptor {
   constructor(
-    private apiService: ApiService,
     private authConfig: AuthConfig,
     private authService: AuthService<AbstractUser>
   ) { }
