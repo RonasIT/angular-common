@@ -1,4 +1,3 @@
-import { ApiService } from '../api';
 import { AuthConfig } from './config';
 import { AuthenticatedGuard, UnauthenticatedGuard } from './guards';
 import { AuthService } from './auth.service';
