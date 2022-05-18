@@ -2,8 +2,8 @@ import { AuthConfig } from './config';
 import { AuthCredentials, AuthResponse } from './models';
 import { AbstractUser, UserService } from '../user';
 import { ApiService } from '../api';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, finalize, map, share, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { finalize, map, share, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
@@ -16,6 +16,7 @@ export class AuthService<User extends AbstractUser> {
   public static DEFAULT_UNAUTHENTICATED_ROUTE: string = '/';
   public static DEFAULT_IS_AUTHENTICATED_FIELD: string = 'is_authenticated';
   public static DEFAULT_REFRESH_TOKEN_ENDPOINT: string = '/auth/refresh';
+  public static DEFAULT_REMEMBER_FIELD: string = 'remember';
 
   public get isTokenRefreshing$(): Observable<boolean> {
     return this._isTokenRefreshing$;
@@ -131,7 +132,7 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public resetRemember(): void {
-    this.cookieService.remove('remember');
+    this.cookieService.remove(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD);
   }
 
   private getIsAuthenticatedFromStorage(): boolean {
@@ -141,12 +142,12 @@ export class AuthService<User extends AbstractUser> {
   }
 
   private getRemember(): boolean {
-    const remember = this.cookieService.get('remember');
+    const remember = this.cookieService.get(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD);
 
     return remember === 'true';
   }
 
   private setRemember(remember: boolean): void {
-    this.cookieService.put('remember', String(remember));
+    this.cookieService.put(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD, String(remember));
   }
 }

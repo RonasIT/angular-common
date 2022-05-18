@@ -7,4 +7,5 @@ export class AuthConfig {
   public refreshTokenEndpoint?: string;
   public refreshTokenEndpointMethod?: 'get' | 'post';
   public isAuthenticatedField?: string;
+  public rememberField?: string;
 }
