@@ -38,6 +38,8 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
               );
           }
 
+          this.authService.unauthorize();
+
           return throwError(response);
         })
       );
