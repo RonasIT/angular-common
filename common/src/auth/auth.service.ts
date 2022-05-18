@@ -120,7 +120,7 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public setIsAuthenticated(remember: boolean = true): void {
-    this.cookieService.put('remember', String(remember));
+    this.setRemember(remember);
     this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true');
 
     this.isAuthenticatedSubject.next(true);
@@ -144,5 +144,9 @@ export class AuthService<User extends AbstractUser> {
     const remember = this.cookieService.get('remember');
 
     return remember === 'true';
+  }
+
+  private setRemember(remember: boolean): void {
+    this.cookieService.put('remember', String(remember));
   }
 }
