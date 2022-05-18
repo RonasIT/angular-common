@@ -3,7 +3,7 @@ import { AuthCredentials, AuthResponse } from './models';
 import { AbstractUser, UserService } from '../user';
 import { ApiService } from '../api';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, map, share, switchMap, tap } from 'rxjs/operators';
+import { catchError, finalize, map, share, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
@@ -109,15 +109,10 @@ export class AuthService<User extends AbstractUser> {
           const remember = this.getRemember();
 
           this.setIsAuthenticated(remember);
-
-          this.refreshTokenResponse$ = null;
-          this.isTokenRefreshingSubject.next(false);
         }),
-        catchError((error) => {
+        finalize(() => {
           this.refreshTokenResponse$ = null;
           this.isTokenRefreshingSubject.next(false);
-
-          return throwError(error);
         })
       );
 
