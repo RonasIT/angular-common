@@ -1,53 +1,44 @@
 import { AuthConfig } from './config';
 import { AuthCredentials, AuthResponse } from './models';
-import { RefreshTokenMode } from './enums';
 import { AbstractUser, UserService } from '../user';
 import { ApiService } from '../api';
-import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
-import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { finalize, map, share, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { classToPlain } from 'class-transformer';
+import { CookieService } from 'ngx-cookie';
 
 @Injectable()
 export class AuthService<User extends AbstractUser> {
   public static DEFAULT_LOGIN_ENDPOINT: string = '/login';
   public static DEFAULT_UNAUTHENTICATED_ROUTE: string = '/';
-  public static DEFAULT_TOKEN_FIELD: string = 'token';
-  public static DEFAULT_REFRESH_TOKEN_FIELD: string = 'refresh_token';
+  public static DEFAULT_IS_AUTHENTICATED_FIELD: string = 'is_authenticated';
   public static DEFAULT_REFRESH_TOKEN_ENDPOINT: string = '/auth/refresh';
-
-  public get token$(): Observable<string> {
-    return this._token$;
-  }
-
-  public get refreshToken$(): Observable<string> {
-    return this._refreshToken$;
-  }
+  public static DEFAULT_REMEMBER_FIELD: string = 'remember';
 
   public get isTokenRefreshing$(): Observable<boolean> {
     return this._isTokenRefreshing$;
   }
 
   public get isAuthenticated$(): Observable<boolean> {
-    return this._token$.pipe(
-      map((token) => !!token)
-    );
+    return this._isAuthenticated$;
   }
 
-  protected _token$: Observable<string>;
+  protected _isAuthenticated$: Observable<boolean>;
   protected _isTokenRefreshing$: Observable<boolean>;
-  protected _refreshToken$: Observable<string>;
 
-  protected tokenSubject: BehaviorSubject<string>;
-  protected refreshTokenSubject: BehaviorSubject<string>;
+  protected isAuthenticatedSubject: BehaviorSubject<boolean>;
   protected isTokenRefreshingSubject: BehaviorSubject<boolean>;
 
   protected apiService: ApiService;
   protected authConfig: AuthConfig;
   protected router: Router;
   protected userService: UserService<User>;
+  protected cookieService: CookieService;
+
+  private refreshTokenResponse$: Observable<HttpResponse<void>> | null;
 
   constructor(
     protected injector: Injector
@@ -56,14 +47,12 @@ export class AuthService<User extends AbstractUser> {
     this.authConfig = this.injector.get(AuthConfig);
     this.router = this.injector.get(Router);
     this.userService = this.injector.get(UserService);
+    this.cookieService = this.injector.get(CookieService);
 
-    const [token, refreshToken] = this.getTokensFromStorage();
+    const isAuthenticated = this.getIsAuthenticatedFromStorage();
 
-    this.tokenSubject = new BehaviorSubject(token);
-    this._token$ = this.tokenSubject.asObservable();
-
-    this.refreshTokenSubject = new BehaviorSubject(refreshToken);
-    this._refreshToken$ = this.refreshTokenSubject.asObservable();
+    this.isAuthenticatedSubject = new BehaviorSubject(isAuthenticated);
+    this._isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
     this.isTokenRefreshingSubject = new BehaviorSubject(false);
     this._isTokenRefreshing$ = this.isTokenRefreshingSubject.asObservable();
@@ -81,19 +70,17 @@ export class AuthService<User extends AbstractUser> {
     return of(authResponse)
       .pipe(
         map((response) => new AuthResponse<User>({
-          token: response[this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD],
-          refreshToken: response[this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD],
           user: this.userService.plainToUser(response['user'], { groups: ['main'] })
         })),
         tap((authResponse) => {
-          this.setToken(authResponse.token, authResponse.refreshToken, remember);
+          this.setIsAuthenticated(remember);
           this.userService.setProfile(authResponse.user);
         })
       );
   }
 
   public unauthorize(): void {
-    this.resetTokens();
+    this.resetIsAuthenticated();
     this.resetRemember();
     this.userService.resetProfile();
 
@@ -101,99 +88,66 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public refreshToken(): Observable<HttpResponse<void>> {
+    if (this.refreshTokenResponse$) {
+      return this.refreshTokenResponse$;
+    }
+
     this.isTokenRefreshingSubject.next(true);
 
-    return this
-      .refreshToken$
+    const method = this.authConfig.refreshTokenEndpointMethod ?? 'get';
+
+    this.refreshTokenResponse$ = this.apiService[method]
+      (
+        this.authConfig.refreshTokenEndpoint ?? AuthService.DEFAULT_REFRESH_TOKEN_ENDPOINT,
+        {},
+        {
+          observe: 'response'
+        }
+      )
       .pipe(
-        take(1),
-        switchMap((refreshToken) => {
-          const data = {};
-          if (refreshToken) {
-            data[this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD] = refreshToken;
-          }
+        share(),
+        tap(() => {
+          const remember = this.getRemember();
 
-          const method = this.authConfig.refreshTokenEndpointMethod ?? 'get';
-
-          return this.apiService[method]
-            <HttpResponse<void>>(
-              this.authConfig.refreshTokenEndpoint ?? AuthService.DEFAULT_REFRESH_TOKEN_ENDPOINT,
-              data,
-              {
-                observe: 'response'
-              }
-            )
-            .pipe(
-              tap((response) => {
-                const refreshTokenMode = this.authConfig.refreshTokenMode ?? RefreshTokenMode.HEADER;
-                const token = (refreshTokenMode === RefreshTokenMode.HEADER)
-                  ? response.headers.get('Authorization').split(' ')[1]
-                  : response.body[this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD];
-
-                const remember = this.getRemember();
-
-                this.setToken(token, undefined, remember);
-                this.isTokenRefreshingSubject.next(false);
-              }),
-              catchError((error) => {
-                this.isTokenRefreshingSubject.next(false);
-
-                return throwError(error);
-              })
-            )
+          this.setIsAuthenticated(remember);
+        }),
+        finalize(() => {
+          this.refreshTokenResponse$ = null;
+          this.isTokenRefreshingSubject.next(false);
         })
       );
+
+    return this.refreshTokenResponse$;
   }
 
-  public setToken(token: string, refreshToken?: string, remember: boolean = true): void {
-    const storage = (remember) ? localStorage : sessionStorage;
+  public setIsAuthenticated(remember: boolean = true): void {
+    this.setRemember(remember);
+    this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true');
 
-    storage.setItem('remember', String(remember));
-
-    storage.setItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD, token);
-    this.tokenSubject.next(token);
-
-    if (refreshToken) {
-      storage.setItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD, refreshToken);
-      this.refreshTokenSubject.next(refreshToken);
-    }
+    this.isAuthenticatedSubject.next(true);
   }
 
-  public resetTokens(): void {
-    localStorage.removeItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
-    sessionStorage.removeItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
-    this.tokenSubject.next(null);
-
-    localStorage.removeItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
-    sessionStorage.removeItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
-    this.refreshTokenSubject.next(null);
+  public resetIsAuthenticated(): void {
+    this.cookieService.remove(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
   }
 
   public resetRemember(): void {
-    localStorage.removeItem('remember');
-    sessionStorage.removeItem('remember');
+    this.cookieService.remove(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD);
   }
 
-  public getTokensFromStorage(): [string, string] {
-    let token = localStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
-    if (!token) {
-      token = sessionStorage.getItem(this.authConfig.tokenField ?? AuthService.DEFAULT_TOKEN_FIELD);
-    }
+  private getIsAuthenticatedFromStorage(): boolean {
+    const isAuthenticated = this.cookieService.get(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD);
 
-    let refreshToken = localStorage.getItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
-    if (!refreshToken) {
-      refreshToken = sessionStorage.getItem(this.authConfig.refreshTokenField ?? AuthService.DEFAULT_REFRESH_TOKEN_FIELD);
-    }
-
-    return [token, refreshToken];
+    return isAuthenticated === 'true';
   }
 
-  public getRemember(): boolean {
-    let remember = localStorage.getItem('remember');
-    if (!remember) {
-      remember = sessionStorage.getItem('remember');
-    }
+  private getRemember(): boolean {
+    const remember = this.cookieService.get(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD);
 
     return remember === 'true';
+  }
+
+  private setRemember(remember: boolean): void {
+    this.cookieService.put(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD, String(remember));
   }
 }
