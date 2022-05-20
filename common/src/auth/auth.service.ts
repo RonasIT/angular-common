@@ -17,6 +17,7 @@ export class AuthService<User extends AbstractUser> {
   public static DEFAULT_IS_AUTHENTICATED_FIELD: string = 'is_authenticated';
   public static DEFAULT_REFRESH_TOKEN_ENDPOINT: string = '/auth/refresh';
   public static DEFAULT_REMEMBER_FIELD: string = 'remember';
+  public static COOKIES_EXPIRES_DATE: Date = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365);
 
   public get isTokenRefreshing$(): Observable<boolean> {
     return this._isTokenRefreshing$;
@@ -60,7 +61,10 @@ export class AuthService<User extends AbstractUser> {
 
   public authorize<T>(credentials: AuthCredentials & T, remember: boolean = true): Observable<AuthResponse<User>> {
     return this.apiService
-      .post<object>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, classToPlain(credentials))
+      .post<object>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, {
+        ...classToPlain(credentials),
+        remember: +remember
+      })
       .pipe(
         switchMap((response) => this.manuallyAuthorize(response, remember))
       );
@@ -122,7 +126,9 @@ export class AuthService<User extends AbstractUser> {
 
   public setIsAuthenticated(remember: boolean = true): void {
     this.setRemember(remember);
-    this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true');
+    this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true', {
+      expires: AuthService.COOKIES_EXPIRES_DATE
+    });
 
     this.isAuthenticatedSubject.next(true);
   }
@@ -150,6 +156,8 @@ export class AuthService<User extends AbstractUser> {
   }
 
   private setRemember(remember: boolean): void {
-    this.cookieService.put(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD, String(remember));
+    this.cookieService.put(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD, String(remember), {
+      expires: AuthService.COOKIES_EXPIRES_DATE
+    });
   }
 }
