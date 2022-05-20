@@ -11,6 +11,6 @@
     "@angular/core": "^13.3.9",
     "@angular/router": "^13.3.9",
     "rxjs": "^7.5.5",
-    "ngx-cookie": "^6.0.0"
+    "ngx-cookie": "^5.0.2"
   }
 }
