@@ -127,7 +127,7 @@ export class AuthService<User extends AbstractUser> {
   public setIsAuthenticated(remember: boolean = true): void {
     this.setRemember(remember);
     this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true', {
-      expires: AuthService.COOKIES_EXPIRES_DATE
+      expires: (remember) ? AuthService.COOKIES_EXPIRES_DATE : null
     });
 
     this.isAuthenticatedSubject.next(true);
@@ -157,7 +157,7 @@ export class AuthService<User extends AbstractUser> {
 
   private setRemember(remember: boolean): void {
     this.cookieService.put(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD, String(remember), {
-      expires: AuthService.COOKIES_EXPIRES_DATE
+      expires: (remember) ? AuthService.COOKIES_EXPIRES_DATE : null
     });
   }
 }
