@@ -3,7 +3,7 @@ import { Injectable, InjectFlags, Injector, PLATFORM_ID } from '@angular/core';
 import { Request, Response } from 'express';
 import { isEmpty } from 'lodash';
 import { CookieOptions } from './models';
-import { REQUEST, RESPONSE } from '@nguniversal/express-engine/tokens';
+import { REQUEST, RESPONSE } from './tokens';
 
 @Injectable()
 export class CookieService<TKey extends string = string> {
