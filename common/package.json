@@ -2,6 +2,7 @@
   "name": "@ronas-it/angular-common",
   "version": "14.0.2",
   "dependencies": {
+    "@nguniversal/express-engine": "^13.1.1",
     "class-transformer": "^0.5.1",
     "lodash": "^4.17.21",
     "tslib": "^2.4.0"
