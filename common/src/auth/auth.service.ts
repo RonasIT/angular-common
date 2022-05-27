@@ -8,7 +8,7 @@ import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { classToPlain } from 'class-transformer';
-import { CookieService } from 'ngx-cookie';
+import { CookieService } from '../cookie';
 
 @Injectable()
 export class AuthService<User extends AbstractUser> {
