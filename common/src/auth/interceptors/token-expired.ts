@@ -26,19 +26,19 @@ export class TokenExpiredInterceptor implements HttpInterceptor {
       .handle(request)
       .pipe(
         catchError((response: HttpErrorResponse) => {
-          if (
-            response.status === HttpStatusCode.Unauthorized &&
-            response.error.error === JwtExceptions.TOKEN_EXPIRED &&
+          if (response.status === HttpStatusCode.Unauthorized &&
             !this.authConfig.unauthorizedRoutes.includes(response.url)
           ) {
-            return this.authService
-              .refreshToken()
-              .pipe(
-                switchMap(() => next.handle(request))
-              );
-          }
+            if (response.error.error === JwtExceptions.TOKEN_EXPIRED) {
+              return this.authService
+                .refreshToken()
+                .pipe(
+                  switchMap(() => next.handle(request))
+                );
+            }
 
-          this.authService.unauthorize();
+            this.authService.unauthorize();
+          }
 
           return throwError(response);
         })
