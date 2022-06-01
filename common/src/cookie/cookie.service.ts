@@ -29,26 +29,18 @@ export class CookieService<TKey extends string = string> {
     this.isDocumentAccessible = isPlatformBrowser(this.platformID);
   }
 
-  public check(key: TKey): boolean {
-    const regExp: RegExp = this.getCookieRegExp(encodeURIComponent(key));
-
-    return regExp.test(this.cookieString);
-  }
-
   public get(key: TKey): string {
-    if (this.check(key)) {
-      const regExp: RegExp = this.getCookieRegExp(encodeURIComponent(key));
-      const result: RegExpExecArray = regExp.exec(this.cookieString);
+    const regExp: RegExp = this.getCookieRegExp(encodeURIComponent(key));
+    const result: RegExpExecArray = regExp.exec(this.cookieString);
 
-      return decodeURIComponent(result[1]);
-    }
-
-    return null;
+    return (result)
+      ? decodeURIComponent(result[1])
+      : null;
   }
 
-  public getObject(name: TKey): object | null {
+  public getObject(key: TKey): object | null {
     try {
-      const parsedObject = JSON.parse(this.get(name));
+      const parsedObject = JSON.parse(this.get(key));
       if (!isEmpty(parsedObject)) {
         return parsedObject;
       }
@@ -65,32 +57,32 @@ export class CookieService<TKey extends string = string> {
     if (this.cookieString?.length) {
       const splits = this.cookieString.split(/; ?/);
       for (const split of splits) {
-        const currentCookie = split.split('=');
-        cookies[decodeURIComponent(currentCookie[0])] = decodeURIComponent(currentCookie[1]);
+        const [key, value] = split.split('=');
+        cookies[decodeURIComponent(key)] = decodeURIComponent(value);
       }
     }
 
     return cookies;
   }
 
-  public put(name: TKey, value: string, _options?: CookieOptions): void {
-    let cookieString = encodeURIComponent(name) + '=' + encodeURIComponent(value) + ';';
+  public put(key: TKey, value: string, _options?: CookieOptions): void {
+    let cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value)};`;
     const options = this.getOptions(_options);
 
     if (options.expires) {
-      cookieString += 'expires=' + options.expires.toUTCString() + ';';
+      cookieString += `expires=${options.expires.toUTCString()};`;
     }
 
     if (options.maxAge) {
-      cookieString += 'Max-Age=' + options.maxAge + ';';
+      cookieString += `Max-Age=${options.maxAge};`;
     }
 
     if (options.path) {
-      cookieString += 'path=' + options.path + ';';
+      cookieString += `path=${options.path};`;
     }
 
     if (options.domain) {
-      cookieString += 'domain=' + options.domain + ';';
+      cookieString += `domain=${options.domain};`;
     }
 
     if (options.secure) {
@@ -98,42 +90,42 @@ export class CookieService<TKey extends string = string> {
     }
 
     if (options.sameSite) {
-      cookieString += 'sameSite=' + options.sameSite + ';';
+      cookieString += `sameSite=${options.sameSite};`;
     }
 
     if (this.isDocumentAccessible) {
       this.document.cookie = cookieString;
     } else {
-      this.response.cookie(name, value, options);
+      this.response.cookie(key, value, options);
     }
   }
 
-  public putObject(name: TKey, value: object, _options?: CookieOptions): void {
+  public putObject(key: TKey, value: object, _options?: CookieOptions): void {
     const stringifiedObject = JSON.stringify(value);
-    this.put(name, stringifiedObject, _options);
+    this.put(key, stringifiedObject, _options);
   }
 
-  public remove(name: TKey, _options?: CookieOptions): void {
+  public remove(key: TKey, _options?: CookieOptions): void {
     const options = this.getOptions(_options);
     if (this.isDocumentAccessible) {
-      this.put(name, '', { ...options, expires: new Date('Thu, 01 Jan 1970 00:00:01 GMT') });
+      this.put(key, '', { ...options, expires: new Date('Thu, 01 Jan 1970 00:00:01 GMT') });
     } else {
-      this.response.clearCookie(name, options);
+      this.response.clearCookie(key, options);
     }
   }
 
   public removeAll(options: CookieOptions): void {
     const cookies = this.getAll();
 
-    for (const cookieName of Object.keys(cookies)) {
-      this.remove(cookieName as TKey, options);
+    for (const cookieKey of Object.keys(cookies)) {
+      this.remove(cookieKey as TKey, options);
     }
   }
 
-  protected getCookieRegExp(name: string): RegExp {
-    const escapedName: string = name.replace(/([\[\]\{\}\(\)\|\=\;\+\?\,\.\*\^\$])/gi, '\\$1');
+  protected getCookieRegExp(key: string): RegExp {
+    const escapedKey: string = key.replace(/([\[\]\{\}\(\)\|\=\;\+\?\,\.\*\^\$])/gi, '\\$1');
 
-    return new RegExp('(?:^' + escapedName + '|;\\s*' + escapedName + ')=(.*?)(?:;|$)', 'g');
+    return new RegExp('(?:^' + escapedKey + '|;\\s*' + escapedKey + ')=(.*?)(?:;|$)', 'g');
   }
 
   protected getOptions(customOptions?: CookieOptions): CookieOptions {

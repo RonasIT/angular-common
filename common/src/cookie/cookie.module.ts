@@ -9,11 +9,12 @@ export class CookieModule {
     const providers: Array<Provider> = [
       { provide: CookieOptions, useValue: config?.defaultOptions }
     ];
+
     if (config?.requestToken && config?.responseToken) {
       providers.push(
         { provide: REQUEST, useExisting: config.requestToken },
         { provide: RESPONSE, useExisting: config.responseToken }
-      )
+      );
     }
 
     return {
