@@ -11,7 +11,7 @@ import { CookieModule } from '../cookie';
   imports: [
     HttpClientModule,
     RouterModule,
-    CookieModule.forRoot()
+    CookieModule
   ],
   providers: [
     AuthenticatedGuard,

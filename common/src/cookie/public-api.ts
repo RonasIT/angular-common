@@ -1,5 +1,5 @@
 /*
- * Public API Surface of auth
+ * Public API Surface of cookie
  */
 
 export * from './cookie.service';
