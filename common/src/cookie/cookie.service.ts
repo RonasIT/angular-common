@@ -1,7 +1,7 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Injectable, InjectFlags, Injector, PLATFORM_ID } from '@angular/core';
 import { Request, Response } from 'express';
-import { isEmpty } from 'lodash';
+import { isEmpty, isNil } from 'lodash';
 import { CookieOptions } from './models';
 import { REQUEST, RESPONSE } from './tokens';
 
@@ -66,8 +66,13 @@ export class CookieService<TKey extends string = string> {
   }
 
   public put(key: TKey, value: string, _options?: CookieOptions): void {
-    let cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value)};`;
     const options = this.getOptions(_options);
+
+    if (isNil(value)) {
+      return this.remove(key, options);
+    }
+
+    let cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value)};`;
 
     if (options.expires) {
       cookieString += `expires=${options.expires.toUTCString()};`;
@@ -100,9 +105,9 @@ export class CookieService<TKey extends string = string> {
     }
   }
 
-  public putObject(key: TKey, value: object, _options?: CookieOptions): void {
-    const stringifiedObject = JSON.stringify(value);
-    this.put(key, stringifiedObject, _options);
+  public putObject(key: TKey, value: object, options?: CookieOptions): void {
+    const stringifiedObject = (value) ? JSON.stringify(value) : null;
+    this.put(key, stringifiedObject, options);
   }
 
   public remove(key: TKey, _options?: CookieOptions): void {
