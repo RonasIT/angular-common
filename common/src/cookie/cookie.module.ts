@@ -1,4 +1,4 @@
-import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
+import { ModuleWithProviders, NgModule, Optional, Provider } from '@angular/core';
 import { CookieConfig } from './config';
 import { CookieService } from './cookie.service';
 import { CookieOptions } from './models';
@@ -19,8 +19,16 @@ export class CookieModule {
 
     if (config?.requestToken && config?.responseToken) {
       providers.push(
-        { provide: REQUEST, useExisting: config.requestToken },
-        { provide: RESPONSE, useExisting: config.responseToken }
+        {
+          provide: REQUEST,
+          deps: [[Optional, config.requestToken]],
+          useFactory: (request: Request) => request
+        },
+        {
+          provide: RESPONSE,
+          deps: [[Optional, config.responseToken]],
+          useFactory: (response: Response) => response
+        }
       );
     }
 
