@@ -1,6 +1,6 @@
 {
   "name": "@ronas-it/angular-common",
-  "version": "14.0.2",
+  "version": "14.0.3",
   "dependencies": {
     "class-transformer": "^0.5.1",
     "lodash": "^4.17.21",
