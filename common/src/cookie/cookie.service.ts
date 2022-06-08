@@ -7,16 +7,16 @@ import { REQUEST, RESPONSE } from './tokens';
 
 @Injectable()
 export class CookieService<TKey extends string = string> {
+  public get cookieString(): string {
+    return this.isDocumentAccessible ? this.document.cookie : this.getServerCookie();
+  }
+
   protected document: Document;
   protected platformID: object;
   protected request: Request;
   protected response: Response;
   protected defaultOptions: CookieOptions;
   protected isDocumentAccessible: boolean;
-
-  protected get cookieString(): string {
-    return this.isDocumentAccessible ? this.document.cookie : this.getServerCookie();
-  }
 
   constructor(
     protected injector: Injector
