@@ -1,7 +1,7 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Injectable, InjectFlags, Injector, PLATFORM_ID } from '@angular/core';
 import { Request, Response } from 'express';
-import { isEmpty, isNil } from 'lodash';
+import { castArray, entries, isEmpty, isNil } from 'lodash';
 import { CookieOptions } from './models';
 import { REQUEST, RESPONSE } from './tokens';
 
@@ -15,7 +15,7 @@ export class CookieService<TKey extends string = string> {
   protected isDocumentAccessible: boolean;
 
   protected get cookieString(): string {
-    return this.isDocumentAccessible ? this.document.cookie : this.request.headers.cookie;
+    return this.isDocumentAccessible ? this.document.cookie : this.getServerCookie();
   }
 
   constructor(
@@ -52,17 +52,7 @@ export class CookieService<TKey extends string = string> {
   }
 
   public getAll(): Record<string, string> {
-    const cookies: Record<string, string> = {};
-
-    if (this.cookieString?.length) {
-      const splits = this.cookieString.split(/; ?/);
-      for (const split of splits) {
-        const [key, value] = split.split('=');
-        cookies[decodeURIComponent(key)] = decodeURIComponent(value);
-      }
-    }
-
-    return cookies;
+    return this.parseCookieString(this.cookieString);
   }
 
   public put(key: TKey, value: string, _options?: CookieOptions): void {
@@ -135,5 +125,37 @@ export class CookieService<TKey extends string = string> {
 
   protected getOptions(customOptions?: CookieOptions): CookieOptions {
     return Object.assign({}, this.defaultOptions, customOptions);
+  }
+
+  private parseCookieString(cookieString: string): Record<string, string> {
+    const cookieArray = cookieString?.split(/; ?/) || [];
+
+    return this.parseCookieArray(cookieArray);
+  }
+
+  private parseCookieArray(cookieArray: Array<string>): Record<string, string> {
+    const cookies: Record<string, string> = {};
+
+    if (cookieArray?.length) {
+      for (const cookie of cookieArray) {
+        const [key, value] = cookie.split('=');
+        cookies[decodeURIComponent(key)] = decodeURIComponent(value);
+      }
+    }
+
+    return cookies;
+  }
+
+  private getServerCookie(): string {
+    const oldCookies = this.parseCookieString(this.request?.headers?.cookie);
+
+    const browserResponseCookies = (this.response?.getHeader('Set-Cookie') || []) as string | Array<string>;
+    const newCookies = this.parseCookieArray(castArray(browserResponseCookies));
+
+    const mergedCookies = Object.assign(oldCookies, newCookies);
+
+    return entries(mergedCookies)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('; ');
   }
 }
