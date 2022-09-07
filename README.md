@@ -254,7 +254,7 @@ Name | Type | Required | Description
 `apiUrl` | `string` | Yes | Endpoint that allows you to access an API
 `trailingSlash` | `boolean` | No | The need for trailing slash (`https://api.your-service.com/login/` for example)
 `enableArrayKeys` | `boolean` | No | Enabling array keys for http params
-`fileKeys` | `Array<string>` | 290 | List of the file keys for http params
+`fileKeys` | `Array<string>` | No | List of the file keys for http params
 
 #### ApiService
 
@@ -284,12 +284,12 @@ CommonAuthModule.forRoot(config: AuthConfig)
 Name | Type | Required | Description
 --- | --- | --- | ---
 `unauthorizedRoutes` | `Array<string>` | Yes | Routes that don't need authorization (public routes, e.g. login, registration and forgot password pages)
-`authService` | `Function` | Yes | 
+`authService` | `Function` | Yes | Service that will be used in your app
 `unauthenticatedRoute` | `string` | No | Route to redirect to after logout or when a user is not authenticated to view some page. By default it is set to `/login`
 `authenticatedRoute` | `string` | No | Route to redirect after successful login
-`loginEndpoint` | `string` | No |
-`refreshTokenEndpoint` | `string` | No |
-`refreshTokenEndpointMethod` | `'get' \| 'post'` | No |
+`loginEndpoint` | `string` | No | Endpoint for login, e.g. `/api/token`
+`refreshTokenEndpoint` | `string` | No | Endpoint for refreshing token, e.g. `/api/token/refresh`
+`refreshTokenEndpointMethod` | `'get' \| 'post'` | No | HTTP Method that will be used for calling endpoint to refresh token
 `isAuthenticatedField` | `string` | No | Field for cookie
 `rememberField` | `string` | No | Field for cookie
 
@@ -374,10 +374,11 @@ Field | Type | Required
 --- | --- | ---
 `id` | `number \| string` | Yes
 
-## Contribution guide
+## Contributing
 
-In progress...
+Contributions to Ronas IT Angular Common are welcome. The contribution guide can be found in the [Contributing guide](CONTRIBUTING.md).
 
 ## License
 
-In progress...
+Ronas IT Angular Common is open-sourced software licensed under the [MIT license](LICENSE).
+
