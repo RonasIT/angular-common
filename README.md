@@ -1,6 +1,18 @@
 # Ronas IT Angular Common
 
+Common Angular services for communicating with backend, authentication and user managing.
+
+## Live demo
+
+In progress...
+
+## About the library
+
+__Ronas IT Angular Common__ working with cookies. One of the main advantages of this approach is that cookies can be HTTP-only. It makes them read-protected on the client side, that improves safety against any Cross-site scripting (XSS) attacks. Cookie-based authentication allows using this services in Server-Side Rendering (SSR) applications.
+
 ## Getting Started
+
+### Installation
 
 Install Ronas IT Angular Common:
 
@@ -8,9 +20,9 @@ Install Ronas IT Angular Common:
 npm i @ronas-it/angular-common --save
 ```
 
-## Usage
+### Usage
 
-### ApiModule
+#### ApiModule
 
 1. Add `ApiModule` to `AppModule` imports:
 
@@ -50,7 +62,7 @@ export class ProductService {
 }
 ```
 
-### UserModule
+#### UserModule
 
 _Note: This module depends on `ApiModule` and `AuthModule`. Please make sure to
 install them prior to installing this module._
@@ -147,7 +159,7 @@ export class UserEffects {
 }
 ```
 
-### AuthModule
+#### AuthModule
 
 _Note: This module depends on `ApiModule` and `UserModule`. Please make sure to
 install them prior to installing this module._
@@ -176,8 +188,7 @@ import { NgModule } from '@angular/core';
 @NgModule({
   imports: [
     CommonAuthModule.forRoot({
-      allowedDomains: configuration.api.allowed_domains,
-      disallowedRoutes: configuration.api.disallowed_routes,
+      unauthorizedRoutes: configuration.api.unauthorized_routes,
       authService: AuthService,
 
       // Optionally, you can pass `unauthenticatedRoute` parameter that
@@ -225,3 +236,149 @@ export class AuthEffects {
   ) { }
 }
 ```
+
+## API
+
+### ApiModule
+
+#### Config
+
+```ts
+ApiModule.forRoot(config: ApiConfig)
+```
+
+##### ApiConfig
+
+Name | Type | Required | Description
+--- | --- | --- | ---
+`apiUrl` | `string` | Yes | Endpoint that allows you to access an API
+`trailingSlash` | `boolean` | No | The need for trailing slash (`https://api.your-service.com/login/` for example)
+`enableArrayKeys` | `boolean` | No | Enabling array keys for http params
+`fileKeys` | `Array<string>` | No | List of the file keys for http params
+
+#### ApiService
+
+Field | Type
+--- | --- 
+`apiUrl` | `string`
+`trailingSlash` | `string`
+`fileKeys` | `Array<string>`
+
+Method | Arguments | Return type
+--- | --- | --- 
+`get<T>` | `endpoint: string, params: any, options: object` | `Observable<T>` 
+`post<T>` | `endpoint: string, data: any, options: object` | `Observable<T>` 
+`put<T>` | `endpoint: string, data: any, options: object` | `Observable<T>` 
+`delete<T>` | `endpoint: string, params: any, options: object` | `Observable<T>` 
+
+### AuthModule
+
+#### Config
+
+```ts
+CommonAuthModule.forRoot(config: AuthConfig)
+```
+
+##### AuthConfig
+
+Name | Type | Required | Description
+--- | --- | --- | ---
+`unauthorizedRoutes` | `Array<string>` | Yes | Routes that don't need authorization (public routes, e.g. login, registration and forgot password pages)
+`authService` | `Function` | Yes | Service that will be used in your app
+`unauthenticatedRoute` | `string` | No | Route to redirect to after logout or when a user is not authenticated to view some page. By default it is set to `/login`
+`authenticatedRoute` | `string` | No | Route to redirect after successful login
+`loginEndpoint` | `string` | No | Endpoint for login, e.g. `/api/token`
+`refreshTokenEndpoint` | `string` | No | Endpoint for refreshing token, e.g. `/api/token/refresh`
+`refreshTokenEndpointMethod` | `'get' \| 'post'` | No | HTTP Method that will be used for calling endpoint to refresh token
+`isAuthenticatedField` | `string` | No | Field for cookie
+`rememberField` | `string` | No | Field for cookie
+
+#### AuthService\<User extends AbstractUser>
+
+Static constant | Type
+--- | --- 
+`DEFAULT_LOGIN_ENDPOINT` | `string`
+`DEFAULT_UNAUTHENTICATED_ROUTE` | `string`
+`DEFAULT_IS_AUTHENTICATED_FIELD` | `string`
+`DEFAULT_REFRESH_TOKEN_ENDPOINT` | `string`
+`DEFAULT_REMEMBER_FIELD` | `string`
+`COOKIES_EXPIRES_DATE` | `Date`
+
+Field | Type
+--- | --- 
+`isTokenRefreshing$` | `Observable<boolean>`
+`isAuthenticated$` | `Observable<boolean>`
+
+Method | Arguments | Return type
+--- | --- | --- 
+`authorize<T>` | `credentials: AuthCredentials & T, remember: boolean` | `Observable<AuthResponse<User>>` 
+`manuallyAuthorize` | `authResponse: object, remember: boolean = true` | `Observable<AuthResponse<User>>` 
+`unauthorize` | | `void` 
+`refreshToken` | | `Observable<HttpResponse<void>>` 
+`setIsAuthenticated` | `remember: boolean` | `void`
+`resetIsAuthenticated` | | `void`
+`resetRemember` | | `void`
+
+#### AuthCredentials
+
+Field | Type | Required
+--- | --- | ---
+`email` | `string` | No
+`password` | `string` | Yes
+
+#### AuthResponse\<User extends AbstractUser>
+
+Field | Type | Required
+--- | --- | ---
+`user` | `User` | No
+
+### UserModule
+
+#### Config
+
+```ts
+UserModule.forRoot(config: UserConfig)
+```
+
+##### UserConfig
+
+Name | Type | Required | Description
+--- | --- | --- | ---
+`userModel` | `{ new(user: any): any }>` | Yes | Model (class) for user
+`userService` | `Function` | Yes | Your UserService implementation
+`profileRelations` | `Array<string>` | No | Relations for getting profile request. For example: `/profile?with[]=company&with[]=clients`
+`profileRelationsKey` | `string` | No | `with` by default
+
+#### UserService\<User extends AbstractUser>
+
+Field | Type
+--- | --- 
+`profile$` | `Observable<User>`
+
+Method | Arguments | Return type
+--- | --- | --- 
+`refreshProfile` | | `Observable<User>` 
+`loadProfile` | | `Observable<User>` 
+`updateProfile` | `user: User` | `Observable<void>` 
+`updatePassword` | `userPasswords: UserPasswords` | `Observable<void>` 
+`setProfile` | `user: User` | `void`
+`patchProfile` | `user: Partial<User>` | `void`
+`resetRemember` | | `void`
+`resetProfile` | | `void`
+`userToPlain` | `user: User, options?: ClassTransformOptions` | `Object`
+`plainToUser` | `plain: object, options?: ClassTransformOptions` | `User` 
+
+#### AbstractUser
+
+Field | Type | Required
+--- | --- | ---
+`id` | `number \| string` | Yes
+
+## Contributing
+
+Contributions to Ronas IT Angular Common are welcome. The contribution guide can be found in the [Contributing guide](CONTRIBUTING.md).
+
+## License
+
+Ronas IT Angular Common is open-sourced software licensed under the [MIT license](LICENSE).
+
