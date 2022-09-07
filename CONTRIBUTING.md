@@ -12,7 +12,7 @@ Please review these guidelines before submitting any pull requests.
 
 ## Guidelines
 
-* Please follow the [ TypeScript Style Guide by Google](https://google.github.io/styleguide/tsguide.html) and[Angular coding style guide](https://angular.io/guide/styleguide).
+* Please follow the [TypeScript Style Guide by Google](https://google.github.io/styleguide/tsguide.html) and[Angular coding style guide](https://angular.io/guide/styleguide).
 * Send a coherent commit history, making sure each individual commit in your pull request is meaningful.
 * Please follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
 * You may need to [rebase](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) to avoid merge conflicts.
