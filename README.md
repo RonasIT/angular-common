@@ -1,6 +1,14 @@
 # Ronas IT Angular Common
 
+Common Angular services for communicating with backend, authentication and user managing.
+
+## About the library
+
+__Ronas IT Angular Common__ working with cookies. One of the main advantages of this approach is that cookies can be HTTP-only. It makes them read-protected on the client side, that improves safety against any Cross-site scripting (XSS) attacks. Cookie-based authentication allows using this services in Server-Side Rendering (SSR) applications.
+
 ## Getting Started
+
+### Installation
 
 Install Ronas IT Angular Common:
 
@@ -8,9 +16,9 @@ Install Ronas IT Angular Common:
 npm i @ronas-it/angular-common --save
 ```
 
-## Usage
+### Usage
 
-### ApiModule
+#### ApiModule
 
 1. Add `ApiModule` to `AppModule` imports:
 
@@ -29,6 +37,15 @@ import { configuration } from '@configuration';
 })
 export class AppModule { }
 ```
+
+##### ApiConfig API
+
+Name | Type | Required | Description
+--- | --- | --- | ---
+`apiUrl` | `string` | Yes | Endpoint that allows you to access an API
+`trailingSlash` | `boolean` | No | The need for trailing slash (`https://api.your-service.com/login/` for example)
+`enableArrayKeys` | `boolean` | No | Enabling array keys for http params
+`fileKeys` | `Array<string>` | 290 | List of the file keys for http params
 
 2. Inject `ApiService` and use it:
 
@@ -50,7 +67,7 @@ export class ProductService {
 }
 ```
 
-### UserModule
+#### UserModule
 
 _Note: This module depends on `ApiModule` and `AuthModule`. Please make sure to
 install them prior to installing this module._
@@ -147,7 +164,7 @@ export class UserEffects {
 }
 ```
 
-### AuthModule
+#### AuthModule
 
 _Note: This module depends on `ApiModule` and `UserModule`. Please make sure to
 install them prior to installing this module._
@@ -191,6 +208,20 @@ import { NgModule } from '@angular/core';
 })
 export class AuthModule { }
 ```
+
+##### AuthConfig API
+
+Name | Type | Required | Description
+--- | --- | --- | ---
+`unauthorizedRoutes` | `Array<string>` | Yes | Routes that don't need authorization (public routes, e.g. login, registration and forgot password pages)
+`authService` | `Function` | Yes | 290
+`unauthenticatedRoute` | `string` | No | Route to redirect to after logout or when a user is not authenticated to view some page. By default it is set to `/login`
+`authenticatedRoute` | `string` | No | Route to redirect after successful login
+`loginEndpoint` | `string` | No |
+`refreshTokenEndpoint` | `string` | No |
+`refreshTokenEndpointMethod` | `'get' \| 'post'` | No |
+`isAuthenticatedField` | `string` | No | Field for cookie
+`rememberField` | `string` | No | Field for cookie
 
 3. Inject `AuthService` and use it:
 
