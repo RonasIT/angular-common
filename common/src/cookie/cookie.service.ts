@@ -55,6 +55,10 @@ export class CookieService<TKey extends string = string> {
     return this.parseCookieString(this.cookieString);
   }
 
+  public hasKey(key: TKey): boolean {
+    return !!this.get(key);
+  }
+
   public put(key: TKey, value: string, _options?: CookieOptions): void {
     const options = this.getOptions(_options);
 

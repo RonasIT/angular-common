@@ -17,7 +17,7 @@ export class AuthService<User extends AbstractUser> {
   public static DEFAULT_IS_AUTHENTICATED_FIELD: string = 'is_authenticated';
   public static DEFAULT_REFRESH_TOKEN_ENDPOINT: string = '/auth/refresh';
   public static DEFAULT_REMEMBER_FIELD: string = 'remember';
-  public static COOKIES_EXPIRES_DATE: Date = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365);
+  public static COOKIES_EXPIRATION_DAYS: number = 365;
 
   public get isTokenRefreshing$(): Observable<boolean> {
     return this._isTokenRefreshing$;
@@ -25,6 +25,10 @@ export class AuthService<User extends AbstractUser> {
 
   public get isAuthenticated$(): Observable<boolean> {
     return this._isAuthenticated$;
+  }
+
+  public get cookiesExpiresDate(): Date {
+    return new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * AuthService.COOKIES_EXPIRATION_DAYS);
   }
 
   protected _isAuthenticated$: Observable<boolean>;
@@ -88,7 +92,9 @@ export class AuthService<User extends AbstractUser> {
     this.resetRemember();
     this.userService.resetProfile();
 
-    this.router.navigate([this.authConfig.unauthenticatedRoute ?? AuthService.DEFAULT_UNAUTHENTICATED_ROUTE]);
+    if (!this.authConfig.disableRedirectAfterUnauthorize) {
+      this.router.navigate([this.authConfig.unauthenticatedRoute ?? AuthService.DEFAULT_UNAUTHENTICATED_ROUTE]);
+    }
   }
 
   public refreshToken(): Observable<HttpResponse<void>> {
@@ -127,7 +133,7 @@ export class AuthService<User extends AbstractUser> {
   public setIsAuthenticated(remember: boolean = true): void {
     this.setRemember(remember);
     this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true', {
-      expires: (remember) ? AuthService.COOKIES_EXPIRES_DATE : null
+      expires: (remember) ? this.cookiesExpiresDate : null
     });
 
     this.isAuthenticatedSubject.next(true);
@@ -157,7 +163,7 @@ export class AuthService<User extends AbstractUser> {
 
   private setRemember(remember: boolean): void {
     this.cookieService.put(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD, String(remember), {
-      expires: (remember) ? AuthService.COOKIES_EXPIRES_DATE : null
+      expires: (remember) ? this.cookiesExpiresDate : null
     });
   }
 }
