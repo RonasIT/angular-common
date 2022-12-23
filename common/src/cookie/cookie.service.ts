@@ -128,7 +128,7 @@ export class CookieService<TKey extends string = string> {
   }
 
   protected getOptions(customOptions?: CookieOptions): CookieOptions {
-    return Object.assign({}, this.defaultOptions, customOptions);
+    return { ...this.defaultOptions, ...customOptions};
   }
 
   private parseCookieString(cookieString: string): Record<string, string> {

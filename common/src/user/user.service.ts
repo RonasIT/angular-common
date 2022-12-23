@@ -4,9 +4,9 @@ import { ApiService } from '../api';
 import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
-  classToPlain,
   ClassTransformOptions,
-  plainToClass
+  instanceToPlain,
+  plainToInstance
 } from 'class-transformer';
 import { Injectable, Injector } from '@angular/core';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
@@ -70,7 +70,7 @@ export class UserService<User extends AbstractUser> {
   }
 
   public updatePassword(userPasswords: UserPasswords): Observable<void> {
-    return this.apiService.put('/profile', classToPlain(userPasswords));
+    return this.apiService.put('/profile', instanceToPlain(userPasswords));
   }
 
   public setProfile(user: User): void {
@@ -90,13 +90,13 @@ export class UserService<User extends AbstractUser> {
     this.profileSubject.next(null);
   }
 
-  public userToPlain(user: User, options?: ClassTransformOptions): Object {
-    return classToPlain(user, options);
+  public userToPlain(user: User, options?: ClassTransformOptions): object {
+    return instanceToPlain(user, options);
   }
 
   public plainToUser(plain: object, options?: ClassTransformOptions): User {
     return (plain)
-      ? plainToClass(this.config.userModel as any, plain, options)
+      ? plainToInstance(this.config.userModel, plain, options)
       : null;
   }
 }
