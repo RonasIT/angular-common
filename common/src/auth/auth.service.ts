@@ -92,12 +92,8 @@ export class AuthService<User extends AbstractUser> {
     this.resetRemember();
     this.userService.resetProfile();
 
-    const redirectRoute = (this.authConfig.unauthenticatedRoute === undefined)
-      ? AuthService.DEFAULT_UNAUTHENTICATED_ROUTE
-      : this.authConfig.unauthenticatedRoute
-
-    if (redirectRoute) {
-      this.router.navigate([redirectRoute]);
+    if (!this.authConfig.disableRedirectAfterUnauthorize) {
+      this.router.navigate([this.authConfig.unauthenticatedRoute ?? AuthService.DEFAULT_UNAUTHENTICATED_ROUTE]);
     }
   }
 
