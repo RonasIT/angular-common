@@ -1,6 +1,6 @@
 export class AuthConfig {
   public unauthorizedRoutes: Array<string>;
-  public authService: any;
+  public authService: new (...args: Array<any>) => any;
   public unauthenticatedRoute?: string;
   public disableRedirectAfterUnauthorize?: boolean;
   public authenticatedRoute?: string;
