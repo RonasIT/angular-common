@@ -15,19 +15,31 @@
   },
   "version": "14.3.0",
   "scripts": {
-    "build": "ng build --configuration production"
+    "build": "ng build --configuration production",
+    "lint": "ng lint"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^14.2.0",
-    "@angular-devkit/build-ng-packagr": "^0.1002.0",
-    "@angular/common": "^14.2.0",
-    "@angular/compiler": "^14.2.0",
-    "@angular/compiler-cli": "^14.2.0",
-    "@angular/core": "^14.2.0",
-    "@angular/platform-browser": "^14.2.0",
-    "@angular/router": "^14.2.0",
-    "@types/lodash": "^4.14.184",
-    "ng-packagr": "^14.2.0",
-    "typescript": "^4.8.2"
+    "@angular-devkit/build-angular": "^15.0.4",
+    "@angular-eslint/builder": "15.1.0",
+    "@angular-eslint/eslint-plugin": "15.1.0",
+    "@angular-eslint/eslint-plugin-template": "15.1.0",
+    "@angular-eslint/schematics": "15.1.0",
+    "@angular-eslint/template-parser": "15.1.0",
+    "@angular/cli": "^15.0.4",
+    "@angular/common": "^15.0.4",
+    "@angular/compiler": "^15.0.4",
+    "@angular/compiler-cli": "^15.0.4",
+    "@angular/core": "^15.0.4",
+    "@angular/platform-browser": "^15.0.4",
+    "@angular/router": "^15.0.4",
+    "@types/lodash": "^4.14.191",
+    "@typescript-eslint/eslint-plugin": "5.44.0",
+    "@typescript-eslint/parser": "5.44.0",
+    "eslint": "^8.28.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsdoc": "^39.6.4",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "ng-packagr": "^15.0.3",
+    "typescript": "~4.8.4"
   }
 }

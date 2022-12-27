@@ -7,7 +7,7 @@ import { finalize, map, share, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
-import { classToPlain } from 'class-transformer';
+import { instanceToPlain } from 'class-transformer';
 import { CookieService } from '../cookie';
 
 @Injectable()
@@ -66,7 +66,7 @@ export class AuthService<User extends AbstractUser> {
   public authorize<T>(credentials: AuthCredentials & T, remember: boolean = true): Observable<AuthResponse<User>> {
     return this.apiService
       .post<object>(this.authConfig.loginEndpoint ?? AuthService.DEFAULT_LOGIN_ENDPOINT, {
-        ...classToPlain(credentials),
+        ...instanceToPlain(credentials),
         remember: +remember
       })
       .pipe(
@@ -74,8 +74,8 @@ export class AuthService<User extends AbstractUser> {
       );
   }
 
-  public manuallyAuthorize(authResponse: object, remember: boolean = true): Observable<AuthResponse<User>> {
-    return of(authResponse)
+  public manuallyAuthorize(_authResponse: object, remember: boolean = true): Observable<AuthResponse<User>> {
+    return of(_authResponse)
       .pipe(
         map((response) => new AuthResponse<User>({
           user: this.userService.plainToUser(response['user'], { groups: ['main'] })
