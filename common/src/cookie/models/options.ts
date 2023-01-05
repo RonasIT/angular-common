@@ -1,8 +1,8 @@
 export class CookieOptions {
-  public maxAge?: number | undefined;
-  public expires?: Date | undefined;
-  public path?: string | undefined;
-  public domain?: string | undefined;
-  public secure?: boolean | undefined;
-  public sameSite?: 'lax' | 'strict' | 'none' | undefined;
+  public maxAge?: number;
+  public expires?: Date;
+  public path?: string;
+  public domain?: string;
+  public secure?: boolean;
+  public sameSite?: 'lax' | 'strict' | 'none';
 }
