@@ -108,8 +108,8 @@ export class CookiePopupFacade {
 }
 ```
 
-3.(SSR Only) Add providers for REQUEST and RESPONSE injection tokens from
-'@nguniversal/express-engine/tokens' in server.ts:
+3. (SSR Only) Add providers for `REQUEST` and `RESPONSE` injection tokens from
+`@nguniversal/express-engine/tokens` in `server.ts`:
 
 ```ts
 server.get('*', (req, res) => {
@@ -134,7 +134,7 @@ server.get('*', (req, res) => {
 });
 ```
 
-4.(SSR Only) Set requestToken and responseToken parameters in the CookieModule config:
+4. (SSR Only) Set `requestToken` and `responseToken` parameters in the `CookieModule` config:
 
 ```ts
 import { CookieModule } from '@ronas-it/angular-common';
