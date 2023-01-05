@@ -4,5 +4,5 @@ export class CookieOptions {
   public path?: string | undefined;
   public domain?: string | undefined;
   public secure?: boolean | undefined;
-  public sameSite?: boolean | 'lax' | 'strict' | 'none' | undefined;
+  public sameSite?: 'lax' | 'strict' | 'none' | undefined;
 }

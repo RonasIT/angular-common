@@ -62,6 +62,98 @@ export class ProductService {
 }
 ```
 
+#### CookieModule
+
+1. Add `CookieModule` to `AppModule` imports:
+
+```ts
+import { CookieModule } from '@ronas-it/angular-common';
+
+@NgModule({
+  imports: [
+    CookieModule.forRoot({
+      defaultOptions: { path: '/', /* other cookie options ... */ }
+    }),
+    ...
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+2. Inject `CookieService` and use it:
+
+```ts
+import { BehaviorSubject, Subject } from 'rxjs';
+import { CookieService } from '@ronas-it/angular-common';
+import { Injectable } from '@angular/core';
+
+@Injectable()
+export class CookiePopupFacade {
+  private isCookiesAccepted$: Subject<boolean>;
+
+  constructor(
+    private cookieService: CookieService
+  ) { 
+    this.isCookiesAccepted$ = new BehaviorSubject(this.cookieService.get('isCookiesAccepted') === 'true');
+  }
+
+  public acceptCookies(): void {
+    this.isCookiesAccepted$.next(true);
+
+    this.cookieService.put('isCookiesAccepted', 'true', { maxAge: 4e10 });
+  }
+
+  ...
+}
+```
+
+3.(SSR Only) Add providers for REQUEST and RESPONSE injection tokens from
+'@nguniversal/express-engine/tokens' in server.ts:
+
+```ts
+server.get('*', (req, res) => {
+  res.render(indexHtml, {
+    req,
+    res,
+    providers: [
+      {
+        provide: APP_BASE_HREF,
+        useValue: req.baseUrl
+      },
+      {
+        provide: REQUEST,
+        useValue: req
+      },
+      {
+        provide: RESPONSE,
+        useValue: res
+      }
+    ]
+  });
+});
+```
+
+4.(SSR Only) Set requestToken and responseToken parameters in the CookieModule config:
+
+```ts
+import { CookieModule } from '@ronas-it/angular-common';
+import { REQUEST, RESPONSE } from '@nguniversal/express-engine/tokens';
+
+@NgModule({
+  imports: [
+    CookieModule.forRoot({
+      defaultOptions: { /* ... */ },
+      requestToken: REQUEST,
+      responseToken: RESPONSE
+    }),
+    ...
+  ],
+  ...
+})
+export class AppModule { }
+```
+
 #### UserModule
 
 _Note: This module depends on `ApiModule` and `AuthModule`. Please make sure to
@@ -161,7 +253,7 @@ export class UserEffects {
 
 #### AuthModule
 
-_Note: This module depends on `ApiModule` and `UserModule`. Please make sure to
+_Note: This module depends on `ApiModule`, `CookieModule` and `UserModule`. Please make sure to
 install them prior to installing this module._
 
 1. Create an `AuthService` and extend it from `CommonAuthService`:
@@ -271,6 +363,50 @@ Method | Arguments | Return type
 `put<T>` | `endpoint: string, data: any, options: object` | `Observable<T>` 
 `delete<T>` | `endpoint: string, params: any, options: object` | `Observable<T>` 
 
+### CookieModule
+
+#### Config
+
+```ts
+CookieModule.forRoot(config: CookieConfig)
+```
+
+##### CookieConfig
+
+Name | Type | Required | Description
+--- | --- | --- | ---
+`defaultOptions` | `CookieOptions` | No | Cookie options that will be used if not specified in the `put` method 
+`requestToken` | `InjectionToken<Request>` | No | `Request` injection token from `@nguniversal/express-engine/tokens` for cookies support in SSR
+`responseToken` | `InjectionToken<Response>` | No | `Response` injection token from `@nguniversal/express-engine/tokens` for cookies support in SSR
+
+##### CookieOptions
+
+Name | Type
+--- | ---
+`maxAge` | `number`
+`expires` | `Date`
+`path` | `string`
+`domain` | `string`
+`secure` | `boolean`
+`sameSite` | `'lax' \| 'strict' \| 'none'`
+
+#### CookieService\<TKey extends string = string>
+
+Field | Type
+--- | --- 
+`cookieString` | `string`
+
+Method | Arguments | Return type
+--- | --- | --- 
+`get` | `key: TKey` | `string \| null` 
+`getObject` | `key: TKey` | `object \| null` 
+`getAll` | | `Record<string, string>` 
+`hasKey` | `key: TKey` | `boolean` 
+`put` | `key: TKey, value: string, options?: CookieOptions` | `void`
+`putObject` | `key: TKey, value: object, options?: CookieOptions` | `void`
+`remove` | `key: TKey, options?: CookieOptions` | `void`
+`removeAll` | `options?: CookieOptions` | `void`
+
 ### AuthModule
 
 #### Config
@@ -286,6 +422,7 @@ Name | Type | Required | Description
 `unauthorizedRoutes` | `Array<string>` | Yes | Routes that don't need authorization (public routes, e.g. login, registration and forgot password pages)
 `authService` | `Function` | Yes | Service that will be used in your app
 `unauthenticatedRoute` | `string` | No | Route to redirect to after logout or when a user is not authenticated to view some page. By default it is set to `/login`
+`disableRedirectAfterUnauthorize` | `boolean` | No | Whether to redirect to `unauthenticatedRoute` after logout or when a user is not authenticated to view some page. By default it is set to `false`
 `authenticatedRoute` | `string` | No | Route to redirect after successful login
 `loginEndpoint` | `string` | No | Endpoint for login, e.g. `/api/token`
 `refreshTokenEndpoint` | `string` | No | Endpoint for refreshing token, e.g. `/api/token/refresh`
@@ -302,12 +439,13 @@ Static constant | Type
 `DEFAULT_IS_AUTHENTICATED_FIELD` | `string`
 `DEFAULT_REFRESH_TOKEN_ENDPOINT` | `string`
 `DEFAULT_REMEMBER_FIELD` | `string`
-`COOKIES_EXPIRES_DATE` | `Date`
+`COOKIES_EXPIRATION_DAYS` | `number`
 
 Field | Type
 --- | --- 
 `isTokenRefreshing$` | `Observable<boolean>`
 `isAuthenticated$` | `Observable<boolean>`
+`cookiesExpiresDate` | `Date`
 
 Method | Arguments | Return type
 --- | --- | --- 
