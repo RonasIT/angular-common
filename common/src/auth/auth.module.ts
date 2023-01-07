@@ -1,18 +1,11 @@
 import { AuthConfig } from './config';
 import { AuthenticatedGuard, UnauthenticatedGuard } from './guards';
 import { AuthService } from './auth.service';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ModuleWithProviders, NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { TokenExpiredInterceptor } from './interceptors';
-import { CookieModule } from '../cookie';
 
 @NgModule({
-  imports: [
-    HttpClientModule,
-    RouterModule,
-    CookieModule
-  ],
   providers: [
     AuthenticatedGuard,
     UnauthenticatedGuard,

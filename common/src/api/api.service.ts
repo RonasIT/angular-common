@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { forOwn, isObject, keys } from 'lodash';
 import { Observable } from 'rxjs';
-import { ModuleConfig } from './config';
+import { ApiConfig } from './config';
 
 @Injectable()
 export class ApiService {
@@ -20,7 +20,7 @@ export class ApiService {
 
   constructor(
     private httpClient: HttpClient,
-    private config: ModuleConfig
+    private config: ApiConfig
   ) { }
 
   public get<T = any>(endpoint: string, params: any = {}, options: object = {}): Observable<T> {

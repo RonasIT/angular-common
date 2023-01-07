@@ -420,7 +420,7 @@ CommonAuthModule.forRoot(config: AuthConfig)
 Name | Type | Required | Description
 --- | --- | --- | ---
 `unauthorizedRoutes` | `Array<string>` | Yes | Routes that don't need authorization (public routes, e.g. login, registration and forgot password pages)
-`authService` | `Function` | Yes | Service that will be used in your app
+`authService` | `new (...args: Array<any>) => any` | Yes | Service that will be used in your app
 `unauthenticatedRoute` | `string` | No | Route to redirect to after logout or when a user is not authenticated to view some page. By default it is set to `/login`
 `disableRedirectAfterUnauthorize` | `boolean` | No | Whether to redirect to `unauthenticatedRoute` after logout or when a user is not authenticated to view some page. By default it is set to `false`
 `authenticatedRoute` | `string` | No | Route to redirect after successful login
@@ -482,8 +482,8 @@ UserModule.forRoot(config: UserConfig)
 
 Name | Type | Required | Description
 --- | --- | --- | ---
-`userModel` | `{ new(user: any): any }>` | Yes | Model (class) for user
-`userService` | `Function` | Yes | Your UserService implementation
+`userModel` | `new (user: any) => any` | Yes | Model (class) for user
+`userService` | `new (...args: Array<any>) => any` | Yes | Your UserService implementation
 `profileRelations` | `Array<string>` | No | Relations for getting profile request. For example: `/profile?with[]=company&with[]=clients`
 `profileRelationsKey` | `string` | No | `with` by default
 
