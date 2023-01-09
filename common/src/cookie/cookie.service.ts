@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Injectable, InjectFlags, Injector, PLATFORM_ID } from '@angular/core';
+import { Injectable, Injector, PLATFORM_ID } from '@angular/core';
 import { Request, Response } from 'express';
 import { castArray, entries, isEmpty, isNil } from 'lodash';
 import { CookieOptions } from './models';
@@ -23,13 +23,13 @@ export class CookieService<TKey extends string = string> {
   ) {
     this.document = this.injector.get(DOCUMENT);
     this.platformID = this.injector.get(PLATFORM_ID);
-    this.request = this.injector.get(REQUEST, undefined, InjectFlags.Optional);
-    this.response = this.injector.get(RESPONSE, undefined, InjectFlags.Optional);
-    this.defaultOptions = this.injector.get(CookieOptions, undefined, InjectFlags.Optional);
+    this.request = this.injector.get(REQUEST, undefined, { optional: true });
+    this.response = this.injector.get(RESPONSE, undefined, { optional: true });
+    this.defaultOptions = this.injector.get(CookieOptions, undefined, { optional: true });
     this.isDocumentAccessible = isPlatformBrowser(this.platformID);
   }
 
-  public get(key: TKey): string {
+  public get(key: TKey): string | null {
     const regExp: RegExp = this.getCookieRegExp(encodeURIComponent(key));
     const result: RegExpExecArray = regExp.exec(this.cookieString);
 
@@ -56,7 +56,7 @@ export class CookieService<TKey extends string = string> {
   }
 
   public hasKey(key: TKey): boolean {
-    return !!this.get(key);
+    return this.get(key) !== null;
   }
 
   public put(key: TKey, value: string, _options?: CookieOptions): void {
@@ -113,7 +113,7 @@ export class CookieService<TKey extends string = string> {
     }
   }
 
-  public removeAll(options: CookieOptions): void {
+  public removeAll(options?: CookieOptions): void {
     const cookies = this.getAll();
 
     for (const cookieKey of Object.keys(cookies)) {
