@@ -1,7 +1,7 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ApiService } from './api.service';
-import { ModuleConfig } from './config';
+import { ApiConfig } from './config';
 import { ContentTypeInterceptor, EncodeUrlParamsSafelyInterceptor, WithCredentialsInterceptor } from './interceptors';
 
 @NgModule({
@@ -28,11 +28,11 @@ import { ContentTypeInterceptor, EncodeUrlParamsSafelyInterceptor, WithCredentia
   ]
 })
 export class ApiModule {
-  static forRoot(config: ModuleConfig): ModuleWithProviders<ApiModule> {
+  static forRoot(config: ApiConfig): ModuleWithProviders<ApiModule> {
     return {
       ngModule: ApiModule,
       providers: [
-        { provide: ModuleConfig, useValue: config }
+        { provide: ApiConfig, useValue: config }
       ]
     };
   }

@@ -5,7 +5,7 @@ import { ApiService } from '../api';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map, share, switchMap, tap } from 'rxjs/operators';
 import { HttpResponse } from '@angular/common/http';
-import { Injectable, Injector } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { instanceToPlain } from 'class-transformer';
 import { CookieService } from '../cookie';
@@ -17,7 +17,7 @@ export class AuthService<User extends AbstractUser> {
   public static DEFAULT_IS_AUTHENTICATED_FIELD: string = 'is_authenticated';
   public static DEFAULT_REFRESH_TOKEN_ENDPOINT: string = '/auth/refresh';
   public static DEFAULT_REMEMBER_FIELD: string = 'remember';
-  public static COOKIES_EXPIRATION_DAYS: number = 365;
+  public static DEFAULT_COOKIES_EXPIRATION_DAYS: number = 365;
 
   public get isTokenRefreshing$(): Observable<boolean> {
     return this._isTokenRefreshing$;
@@ -28,7 +28,7 @@ export class AuthService<User extends AbstractUser> {
   }
 
   public get cookiesExpiresDate(): Date {
-    return new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * AuthService.COOKIES_EXPIRATION_DAYS);
+    return new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * (this.authConfig.cookiesExpirationDays ?? AuthService.DEFAULT_COOKIES_EXPIRATION_DAYS));
   }
 
   protected _isAuthenticated$: Observable<boolean>;
@@ -45,14 +45,12 @@ export class AuthService<User extends AbstractUser> {
 
   private refreshTokenResponse$: Observable<HttpResponse<void>> | null;
 
-  constructor(
-    protected injector: Injector
-  ) {
-    this.apiService = this.injector.get(ApiService);
-    this.authConfig = this.injector.get(AuthConfig);
-    this.router = this.injector.get(Router);
-    this.userService = this.injector.get(UserService);
-    this.cookieService = this.injector.get(CookieService);
+  constructor() {
+    this.apiService = inject(ApiService);
+    this.authConfig = inject(AuthConfig);
+    this.router = inject(Router);
+    this.userService = inject(UserService);
+    this.cookieService = inject(CookieService);
 
     const isAuthenticated = this.getIsAuthenticatedFromStorage();
 

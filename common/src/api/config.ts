@@ -1,4 +1,4 @@
-export class ModuleConfig {
+export class ApiConfig {
   apiUrl: string;
   trailingSlash?: boolean;
   enableArrayKeys?: boolean;

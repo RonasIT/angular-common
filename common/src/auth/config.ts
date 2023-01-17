@@ -9,4 +9,5 @@ export class AuthConfig {
   public refreshTokenEndpointMethod?: 'get' | 'post';
   public isAuthenticatedField?: string;
   public rememberField?: string;
+  public cookiesExpirationDays?: number;
 }

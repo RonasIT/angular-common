@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Injectable, Injector, PLATFORM_ID } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Request, Response } from 'express';
 import { castArray, entries, isEmpty, isNil } from 'lodash';
 import { CookieOptions } from './models';
@@ -12,21 +12,17 @@ export class CookieService<TKey extends string = string> {
   }
 
   protected document: Document;
-  protected platformID: object;
   protected request: Request;
   protected response: Response;
   protected defaultOptions: CookieOptions;
   protected isDocumentAccessible: boolean;
 
-  constructor(
-    protected injector: Injector
-  ) {
-    this.document = this.injector.get(DOCUMENT);
-    this.platformID = this.injector.get(PLATFORM_ID);
-    this.request = this.injector.get(REQUEST, undefined, { optional: true });
-    this.response = this.injector.get(RESPONSE, undefined, { optional: true });
-    this.defaultOptions = this.injector.get(CookieOptions, undefined, { optional: true });
-    this.isDocumentAccessible = isPlatformBrowser(this.platformID);
+  constructor() {
+    this.document = inject(DOCUMENT);
+    this.request = inject(REQUEST, { optional: true });
+    this.response = inject(RESPONSE, { optional: true });
+    this.defaultOptions = inject(CookieOptions, { optional: true });
+    this.isDocumentAccessible = isPlatformBrowser(inject(PLATFORM_ID));
   }
 
   public get(key: TKey): string | null {
