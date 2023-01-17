@@ -388,7 +388,7 @@ Name | Type
 `path` | `string`
 `domain` | `string`
 `secure` | `boolean`
-`sameSite` | `'lax' \| 'strict' \| 'none'`
+`sameSite` | `boolean \| 'lax' \| 'strict' \| 'none'`
 
 #### CookieService\<TKey extends string = string>
 
@@ -429,6 +429,7 @@ Name | Type | Required | Description
 `refreshTokenEndpointMethod` | `'get' \| 'post'` | No | HTTP Method that will be used for calling endpoint to refresh token
 `isAuthenticatedField` | `string` | No | Field for cookie
 `rememberField` | `string` | No | Field for cookie
+`cookiesExpirationDays` | `number` | No | Expiration for authentication cookies when call authorize with remember flag set to true. By default it is set to 365
 
 #### AuthService\<User extends AbstractUser>
 
@@ -439,7 +440,7 @@ Static constant | Type
 `DEFAULT_IS_AUTHENTICATED_FIELD` | `string`
 `DEFAULT_REFRESH_TOKEN_ENDPOINT` | `string`
 `DEFAULT_REMEMBER_FIELD` | `string`
-`COOKIES_EXPIRATION_DAYS` | `number`
+`DEFAULT_COOKIES_EXPIRATION_DAYS` | `number`
 
 Field | Type
 --- | --- 
