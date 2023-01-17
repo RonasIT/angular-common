@@ -4,5 +4,5 @@ export class CookieOptions {
   public path?: string;
   public domain?: string;
   public secure?: boolean;
-  public sameSite?: 'lax' | 'strict' | 'none';
+  public sameSite?: boolean | 'lax' | 'strict' | 'none';
 }
