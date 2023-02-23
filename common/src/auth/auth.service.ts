@@ -133,9 +133,7 @@ export class AuthService<User extends AbstractUser> {
   public setIsAuthenticated(authResponse: AuthResponse<User>, remember: boolean = true): void {
     this.setRemember(authResponse, remember);
     this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true', {
-      expires: (remember)
-        ? (authResponse.ttl && authResponse.refresh_ttl) ? this.getExpiresForCookies(authResponse) : this.defaultCookiesExpiresDate
-        : null
+      expires: this.getExpiresForCookies(authResponse, remember)
     });
 
     this.isAuthenticatedSubject.next(true);
@@ -165,9 +163,7 @@ export class AuthService<User extends AbstractUser> {
 
   private setRemember(authResponse: AuthResponse<User>, remember: boolean): void {
     this.cookieService.put(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD, String(remember), {
-      expires: (remember)
-        ? (authResponse.ttl && authResponse.refresh_ttl) ? this.getExpiresForCookies(authResponse) : this.defaultCookiesExpiresDate
-        : null
+      expires: this.getExpiresForCookies(authResponse, remember)
     });
   }
 
@@ -178,8 +174,12 @@ export class AuthService<User extends AbstractUser> {
     });
   }
 
-  private getExpiresForCookies(authResponse: AuthResponse<User>): Date {
-    return this.getCurrentDatePlusMinutes(authResponse.ttl + authResponse.refresh_ttl);
+  private getExpiresForCookies(authResponse: AuthResponse<User>, remember: boolean): Date {
+    return (remember)
+      ? (authResponse.ttl && authResponse.refresh_ttl)
+        ? this.getCurrentDatePlusMinutes(authResponse.ttl + authResponse.refresh_ttl)
+        : this.defaultCookiesExpiresDate
+      : null;
   }
 
   private getCurrentDatePlusMinutes(minutes: number): Date {
