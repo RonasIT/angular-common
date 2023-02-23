@@ -96,7 +96,7 @@ export class AuthService<User extends AbstractUser> {
     }
   }
 
-  public refreshToken(): Observable<HttpResponse<AuthResponse<User>>> {
+  public refreshToken(): Observable<HttpResponse<object>> {
     if (this.refreshTokenResponse$) {
       return this.refreshTokenResponse$;
     }
@@ -104,11 +104,14 @@ export class AuthService<User extends AbstractUser> {
     this.isTokenRefreshingSubject.next(true);
 
     const method = this.authConfig.refreshTokenEndpointMethod ?? 'get';
+    const remember = this.getRemember();
 
-    this.refreshTokenResponse$ = this.apiService[method]<HttpResponse<AuthResponse<User>>>
+    this.refreshTokenResponse$ = this.apiService[method]<HttpResponse<object>>
       (
         this.authConfig.refreshTokenEndpoint ?? AuthService.DEFAULT_REFRESH_TOKEN_ENDPOINT,
-        {},
+        {
+          remember: +remember
+        },
         {
           observe: 'response'
         }
@@ -117,7 +120,6 @@ export class AuthService<User extends AbstractUser> {
         share(),
         tap((response) => {
           const authResponse = this.parseAuthResponse(response.body);
-          const remember = this.getRemember();
 
           this.setIsAuthenticated(authResponse, remember);
         }),
