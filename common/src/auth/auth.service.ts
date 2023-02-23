@@ -78,7 +78,7 @@ export class AuthService<User extends AbstractUser> {
   public manuallyAuthorize(_authResponse: object, remember: boolean = true): Observable<AuthResponse<User>> {
     return of(_authResponse)
       .pipe(
-        map((response) => this.getAuthResponse(response)),
+        map((response) => this.parseAuthResponse(response)),
         tap((authResponse) => {
           this.setIsAuthenticated(authResponse, remember);
           this.userService.setProfile(authResponse.user);
@@ -116,7 +116,7 @@ export class AuthService<User extends AbstractUser> {
       .pipe(
         share(),
         tap((response) => {
-          const authResponse = this.getAuthResponse(response.body);
+          const authResponse = this.parseAuthResponse(response.body);
           const remember = this.getRemember();
 
           this.setIsAuthenticated(authResponse, remember);
@@ -167,9 +167,10 @@ export class AuthService<User extends AbstractUser> {
     });
   }
 
-  private getAuthResponse(response: object): AuthResponse<User> {
+  private parseAuthResponse(response: object): AuthResponse<User> {
     return new AuthResponse<User>({
-      ...response,
+      ttl: ('ttl' in response) ? Number(response['ttl']) : undefined,
+      refresh_ttl: ('refresh_ttl' in response) ? Number(response['refresh_ttl']) : undefined,
       user: this.userService.plainToUser(response['user'], { groups: ['main'] })
     });
   }
@@ -177,7 +178,7 @@ export class AuthService<User extends AbstractUser> {
   private getExpiresForCookies(authResponse: AuthResponse<User>, remember: boolean): Date {
     return (remember)
       ? (authResponse.ttl && authResponse.refresh_ttl)
-        ? this.getCurrentDatePlusMinutes(authResponse.ttl + authResponse.refresh_ttl)
+        ? this.getCurrentDatePlusMinutes(authResponse.refresh_ttl)
         : this.defaultCookiesExpiresDate
       : null;
   }
