@@ -27,7 +27,10 @@ export class AuthService<User extends AbstractUser> {
     return this._isAuthenticated$;
   }
 
-  public get cookiesExpiresDate(): Date {
+  /**
+   * @deprecated Please use TTL and Refresh TTL values from the backend instead of a hardcoded expiration time.
+   */
+  public get defaultCookiesExpiresDate(): Date {
     return new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * (this.authConfig.cookiesExpirationDays ?? AuthService.DEFAULT_COOKIES_EXPIRATION_DAYS));
   }
 
@@ -43,7 +46,7 @@ export class AuthService<User extends AbstractUser> {
   protected userService: UserService<User>;
   protected cookieService: CookieService;
 
-  private refreshTokenResponse$: Observable<HttpResponse<void>> | null;
+  private refreshTokenResponse$: Observable<HttpResponse<AuthResponse<User>>> | null;
 
   constructor() {
     this.apiService = inject(ApiService);
@@ -75,11 +78,9 @@ export class AuthService<User extends AbstractUser> {
   public manuallyAuthorize(_authResponse: object, remember: boolean = true): Observable<AuthResponse<User>> {
     return of(_authResponse)
       .pipe(
-        map((response) => new AuthResponse<User>({
-          user: this.userService.plainToUser(response['user'], { groups: ['main'] })
-        })),
+        map((response) => this.getAuthResponse(response)),
         tap((authResponse) => {
-          this.setIsAuthenticated(remember);
+          this.setIsAuthenticated(authResponse, remember);
           this.userService.setProfile(authResponse.user);
         })
       );
@@ -95,7 +96,7 @@ export class AuthService<User extends AbstractUser> {
     }
   }
 
-  public refreshToken(): Observable<HttpResponse<void>> {
+  public refreshToken(): Observable<HttpResponse<AuthResponse<User>>> {
     if (this.refreshTokenResponse$) {
       return this.refreshTokenResponse$;
     }
@@ -104,7 +105,7 @@ export class AuthService<User extends AbstractUser> {
 
     const method = this.authConfig.refreshTokenEndpointMethod ?? 'get';
 
-    this.refreshTokenResponse$ = this.apiService[method]
+    this.refreshTokenResponse$ = this.apiService[method]<HttpResponse<AuthResponse<User>>>
       (
         this.authConfig.refreshTokenEndpoint ?? AuthService.DEFAULT_REFRESH_TOKEN_ENDPOINT,
         {},
@@ -114,10 +115,11 @@ export class AuthService<User extends AbstractUser> {
       )
       .pipe(
         share(),
-        tap(() => {
+        tap((response) => {
+          const authResponse = this.getAuthResponse(response.body);
           const remember = this.getRemember();
 
-          this.setIsAuthenticated(remember);
+          this.setIsAuthenticated(authResponse, remember);
         }),
         finalize(() => {
           this.refreshTokenResponse$ = null;
@@ -128,10 +130,12 @@ export class AuthService<User extends AbstractUser> {
     return this.refreshTokenResponse$;
   }
 
-  public setIsAuthenticated(remember: boolean = true): void {
-    this.setRemember(remember);
+  public setIsAuthenticated(authResponse: AuthResponse<User>, remember: boolean = true): void {
+    this.setRemember(authResponse, remember);
     this.cookieService.put(this.authConfig.isAuthenticatedField ?? AuthService.DEFAULT_IS_AUTHENTICATED_FIELD, 'true', {
-      expires: (remember) ? this.cookiesExpiresDate : null
+      expires: (remember)
+        ? (authResponse.ttl && authResponse.refresh_ttl) ? this.getExpiresForCookies(authResponse) : this.defaultCookiesExpiresDate
+        : null
     });
 
     this.isAuthenticatedSubject.next(true);
@@ -159,9 +163,26 @@ export class AuthService<User extends AbstractUser> {
     return remember === 'true';
   }
 
-  private setRemember(remember: boolean): void {
+  private setRemember(authResponse: AuthResponse<User>, remember: boolean): void {
     this.cookieService.put(this.authConfig.rememberField ?? AuthService.DEFAULT_REMEMBER_FIELD, String(remember), {
-      expires: (remember) ? this.cookiesExpiresDate : null
+      expires: (remember)
+        ? (authResponse.ttl && authResponse.refresh_ttl) ? this.getExpiresForCookies(authResponse) : this.defaultCookiesExpiresDate
+        : null
     });
+  }
+
+  private getAuthResponse(response: object): AuthResponse<User> {
+    return new AuthResponse<User>({
+      ...response,
+      user: this.userService.plainToUser(response['user'], { groups: ['main'] })
+    });
+  }
+
+  private getExpiresForCookies(authResponse: AuthResponse<User>): Date {
+    return this.getCurrentDatePlusMinutes(authResponse.ttl + authResponse.refresh_ttl);
+  }
+
+  private getCurrentDatePlusMinutes(minutes: number): Date {
+    return new Date(new Date().getTime() + minutes * 60000); // 60,000 milliseconds in a minute;
   }
 }
