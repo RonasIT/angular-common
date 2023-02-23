@@ -4,13 +4,13 @@
   "dependencies": {
     "class-transformer": "^0.5.1",
     "lodash": "^4.17.21",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "peerDependencies": {
     "@angular/common": "^15.1.0",
     "@angular/core": "^15.1.0",
-    "@angular/router": "^15.1.0",
     "@angular/platform-browser": "^15.1.0",
+    "@angular/router": "^15.1.0",
     "rxjs": "^7.8.0"
   }
 }
