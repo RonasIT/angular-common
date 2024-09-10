@@ -1,16 +1,16 @@
 {
   "name": "@ronas-it/angular-common",
-  "version": "15.2.0",
+  "version": "18.2.0",
   "dependencies": {
     "class-transformer": "^0.5.1",
     "lodash": "^4.17.21",
     "tslib": "^2.5.0"
   },
   "peerDependencies": {
-    "@angular/common": "^15.2.0",
-    "@angular/core": "^15.2.0",
-    "@angular/platform-browser": "^15.2.0",
-    "@angular/router": "^15.2.0",
+    "@angular/common": "^18.2.0",
+    "@angular/core": "^18.2.0",
+    "@angular/platform-browser": "^18.2.0",
+    "@angular/router": "^18.2.0",
     "rxjs": "^7.8.0"
   }
 }
